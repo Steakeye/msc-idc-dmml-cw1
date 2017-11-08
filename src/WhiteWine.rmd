@@ -11,12 +11,16 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 # Install and load all packages up-front!
+#pkgs <- c("cluster",  "NbClust")
+mirrorUrl = "http://cran.ma.imperial.ac.uk"
+
 # read xl
-if(!require(readxl)) install.packages("readxl",repos = "http://cran.us.r-project.org")
+if(!require(readxl)) install.packages("readxl",repos = mirrorUrl)
+if(!require(cluster)) install.packages("cluster",repos = mirrorUrl)
+if(!require(NbClust)) install.packages("NbClust",repos = mirrorUrl)
 #install.packages("readxl")
 library("readxl")
 
-#pkgs <- c("cluster",  "NbClust")
 #install.packages(pkgs)
 #library(NbClust)
 #getwd()
@@ -40,15 +44,15 @@ my_data <- read_excel("../data/Whitewine.xlsx")
 ```{r}
 #Normalise the WhiteWine dataset from Excel import
 
-data.train <- scale(my_data[-1])
-summary(data.train)
-nc <- NbClust(data.train,
-min.nc=2, max.nc=15,
-method="kmeans") #runtime hangs at this point - needs optimising
-barplot(table(nc$Best.n[1,]),
-xlab="Numer of Clusters",
-ylab="Number of Criteria",
-main="Number of Clusters Chosen by 26 Criteria")
+#data.train <- scale(my_data[-1])
+#summary(data.train)
+#nc <- NbClust(data.train,
+#min.nc=2, max.nc=15,
+#method="kmeans") #runtime hangs at this point - needs optimising
+#barplot(table(nc$Best.n[1,]),
+#xlab="Numer of Clusters",
+#ylab="Number of Criteria",
+#main="Number of Clusters Chosen by 26 Criteria")
 ```
 
 ## R Markdown
