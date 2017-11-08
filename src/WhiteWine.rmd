@@ -34,14 +34,18 @@ library("readxl")
 
 ##Starting off
 
-Firstly we need to load the data and then 
+Firstly we need to load the data...
 ```{r}
 #going to import the Excel spreadsheet WhiteWine dataset
 # xlsx files
-my_data <- read_excel("../data/Whitewine.xlsx")
+wine.raw <- read_excel("../data/Whitewine.xlsx")
+head(wine.raw)
 ```
 
+Here's a a glance at the datset
 ```{r}
+str(wine.raw)
+
 #Normalise the WhiteWine dataset from Excel import
 
 #data.train <- scale(my_data[-1])
@@ -54,6 +58,28 @@ my_data <- read_excel("../data/Whitewine.xlsx")
 #ylab="Number of Criteria",
 #main="Number of Clusters Chosen by 26 Criteria")
 ```
+
+We want to scale the data to allow all attributes to be compared more easily. First of all let's split our data so we have two tables, one with all the attributes of wine and the other just with the humanly percieved quality 
+```{r}
+wine.all_but_q <- wine.raw[1:11]
+wine.q <- wine.raw$quality
+
+str(wine.all_but_q)
+str(wine.q)
+#wine.scaled <- scale(wine.raw)
+```
+
+Now we scale the data
+```{r}
+wine.scaled <- scale(wine.all_but_q)
+
+summary(wine.scaled)
+```
+
+```{r}
+boxplot(wine.scaled, main="Looking at the data graphically") 
+```
+
 
 ## R Markdown
 
