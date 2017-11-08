@@ -10,10 +10,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r}
-#Install and load all packages up-front!
-#read xl
+# Install and load all packages up-front!
+# read xl
+if(!require(readxl)) install.packages("readxl",repos = "http://cran.us.r-project.org")
 #install.packages("readxl")
-#library("readxl")
+library("readxl")
 
 #pkgs <- c("cluster",  "NbClust")
 #install.packages(pkgs)
