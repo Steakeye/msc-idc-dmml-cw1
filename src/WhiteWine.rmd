@@ -65,6 +65,7 @@ str(wine.raw)
 ```
 
 We want to scale the data to allow all attributes to be compared more easily. First of all let's split our data so we have two tables, one with all the attributes of wine and the other just with the humanly percieved quality 
+
 ```{r}
 wine.all_but_q <- wine.raw[1:11]
 wine.q <- wine.raw$quality
@@ -86,6 +87,10 @@ boxplot(wine.scaled, main="Looking at the data graphically", xlab="Wine Attribut
 ```
 
 We can see from these box-plots that some attributes seem to have some clear outliers that would suggest erroneous data and not just natural extremes. As such, we can decide that it's worth cleansing the data a little by removing these outliers from the dataset. For example, Alcohol on the most right column seesms to have very clear boundaries as we'd expect from wine; when that is compared with some other attributes, they seem to tell a different story: Chlorides seems to have a lot of values that are in the upper quartile, and a large distance etween min and max values but when you look it you can see there's a gradient that suggests a normal distribution; in contrast to this, the columns Residual Sugar, Free Sulfur Dioxide and Density all seem to not only have relatively large min and max distances but there seem to be uppermost values that with nearest neighbour values that are a relatively large distance away.
+
+<!--
+https://www.researchgate.net/post/Should_outliers_be_removed_before_or_after_data_transformation
+-->
 
 Below are density line graphs to demonstrate the difference between attributes that don't seem to have outliers compared to those that do.
 
@@ -145,9 +150,9 @@ boxplot(wine.scaled_cleansed_bp, main="Looking at the cleansed data graphically"
 
 ```
 
-While this new set of data is now has no values beyond the outermost quartile ranges, this is argaubly too harsh a treatment. Boxplot has an outlier property that we can use to collect values that we might want to remove, so this is the one option we will look at for cleansing data.
+While this new set of data is now has no values beyond the outermost quartile ranges, this is argaubly too harsh a treatment. An alternative option is to arbitrarily work with the interquartile ranges; what  have done is to tweek the multiplier of the interquartile range until it successfully meant that only the most extreme outliers were discard. In the end a value 5 times that of the IQR worked well to pick off only values at the very tips of the tails.
 
-```{r}
+```{r, message=FALSE}
 
 #Get the top 5 variables with the highest outlier distance
 worst_outliers <- head(sorted_attributes_by_neighbour_d$attributes, n=5)
@@ -169,7 +174,7 @@ for(i in worst_outliers){
   idx <- which(wine.scaled_cleansed_iqr[,i] < min | wine.scaled_cleansed_iqr[,i] > max)
   
   # Output the number of outliers in each variable
-  print(paste(i, length(idx), sep=' - removing: '))
+  #print(paste(i, length(idx), sep=' - removing: '))
   
   # Append the outliers list
   iqr_outliers <- c(iqr_outliers, idx) 
@@ -190,7 +195,7 @@ Now that the data looks a lot cleaner, it's time to start working with the data 
 ```{r}
 set.seed(123)
 
-number_of_clusters <- NbClust(wine.scaled_cleansed_bp,
+number_of_clusters <- NbClust(wine.scaled_cleansed_iqr,
                  min.nc=2, max.nc=15,
                  method="kmeans")
 
@@ -209,7 +214,7 @@ To confirm that the accuracy of this result, we can plot the sum of square error
 ```{r}
 sse_list <- 0
 for (i in 1:15){
-  sse_list[i] <- sum(kmeans(wine.scaled_cleansed_bp, centers=i)$withinss)
+  sse_list[i] <- sum(kmeans(wine.scaled_cleansed_iqr, centers=i)$withinss)
 }
 
 plot(1:15,
@@ -222,7 +227,7 @@ plot(1:15,
 The histogram backs up the results of nbclust seeing as the 'elbow' of the line as at 2 on the Number of Clusters. So 
 
 ```{r}
-fit.km <- kmeans(wine.scaled_cleansed_bp, 2)
+fit.km <- kmeans(wine.scaled_cleansed_iqr, 2)
 
 ```
 
