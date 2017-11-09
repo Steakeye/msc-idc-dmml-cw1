@@ -100,17 +100,14 @@ In order to work out which attributes should be considered to have valid outlier
 
 ```{r}
 #Create a list to populate with our tail neighbour distances
-tail_deltas <- list()
+tail_deltas <- c()
 
 for (attrib in wine.scaled) {
   #get the last two values
   data_tails <- tail(sort(attrib),2)
   #push the delta on to our list 
-  tail_deltas <- append(tail_deltas, diff(data_tails))
+  tail_deltas <- c(tail_deltas, diff(data_tails))
 }
-
-#We seem to be creating a vector of vectors to we need to flatten this (TODO: Fix if we have time!)
-flattened_delta_list <- unlist(tail_deltas, recursive=FALSE)
 
 #grab out attribute keys to include in our new table/frame
 attributes <- names(wine.scaled)
@@ -122,8 +119,8 @@ dataframe <- data.frame(attributes = attributes, tail_neighbour_d=flattened_delt
 neighbout_order <- order(dataframe$tail_neighbour_d, decreasing=TRUE)
 
 #now apply the order to the frame
-dataframe[ neighbout_order, ]
-
+sorted_attributes_by_neighbour_d <- dataframe[ neighbout_order, ]
+sorted_attributes_by_neighbour_d
 ```
 
 Given the findings, I think we can just consider the top five attributes in the above list as ones to cleanse for outliers. A lot of sources online warn against arbitrarily getting rid of outliers because it might be the case that valid information is being lost when what you really wnat to be account for is bad data.
@@ -135,14 +132,56 @@ To clarify, the attrbibutes to be processed are:
 -	citric acid 		
 -	fixed acidity
 
-```{r}
-wine.scaled_cleansed <- wine.scaled[ !(wine.scaled$density %in% boxplot(wine.scaled$density, plot=FALSE)$out), ]
-wine.scaled_cleansed <- wine.scaled_cleansed[ !(wine.scaled_cleansed$`free sulfur dioxide` %in% boxplot(wine.scaled$`free sulfur dioxide`, plot=FALSE)$out), ]
-wine.scaled_cleansed <- wine.scaled_cleansed[ !(wine.scaled_cleansed$`residual sugar` %in% boxplot(wine.scaled_cleansed$`residual sugar`, plot=FALSE)$out), ]
-wine.scaled_cleansed <- wine.scaled_cleansed[ !(wine.scaled_cleansed$`citric acid` %in% boxplot(wine.scaled_cleansed$`citric acid`, plot=FALSE)$out), ]
-wine.scaled_cleansed <- wine.scaled_cleansed[ !(wine.scaled_cleansed$`fixed acidity` %in% boxplot(wine.scaled_cleansed$`fixed acidity`, plot=FALSE)$out), ]
+Boxplot has an outlier property that we can use to collect values that we might want to remove, so this is the one option we will look at for cleansing data.
 
-boxplot(wine.scaled_cleansed, main="Looking at the cleansed data graphically", xlab="Wine Attributes", ylab="Scalled values") 
+```{r}
+wine.scaled_cleansed_bp <- wine.scaled[ !(wine.scaled$density %in% boxplot(wine.scaled$density, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp <- wine.scaled_cleansed_bp[ !(wine.scaled_cleansed_bp$`free sulfur dioxide` %in% boxplot(wine.scaled$`free sulfur dioxide`, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp <- wine.scaled_cleansed_bp[ !(wine.scaled_cleansed_bp$`residual sugar` %in% boxplot(wine.scaled_cleansed_bp$`residual sugar`, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp <- wine.scaled_cleansed_bp[ !(wine.scaled_cleansed_bp$`citric acid` %in% boxplot(wine.scaled_cleansed_bp$`citric acid`, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp <- wine.scaled_cleansed_bp[ !(wine.scaled_cleansed_bp$`fixed acidity` %in% boxplot(wine.scaled_cleansed_bp$`fixed acidity`, plot=FALSE)$out), ]
+
+boxplot(wine.scaled_cleansed_bp, main="Looking at the cleansed data graphically", xlab="Wine Attributes", ylab="Scalled values") 
+
+```
+
+While this new set of data is now has no values beyond the outermost quartile ranges, this is argaubly too harsh a treatment. Boxplot has an outlier property that we can use to collect values that we might want to remove, so this is the one option we will look at for cleansing data.
+
+```{r}
+
+#Get the top 5 variables with the highest outlier distance
+worst_outliers <- head(sorted_attributes_by_neighbour_d$attributes, n=5)
+
+wine.scaled_cleansed_iqr <- wine.scaled
+
+# Create a variable to store the row id's to be removed
+iqr_outliers <- c()
+quartlie_multiplier = 5
+
+# Loop through the list of columns you specified
+for(i in worst_outliers){
+
+  # Get the Min/Max values
+  max <- quantile(wine.scaled_cleansed_iqr[,i],0.75, na.rm=FALSE) + (IQR(wine.scaled_cleansed_iqr[,i], na.rm=FALSE) * quartlie_multiplier )
+  min <- quantile(wine.scaled_cleansed_iqr[,i],0.25, na.rm=FALSE) - (IQR(wine.scaled_cleansed_iqr[,i], na.rm=FALSE) * quartlie_multiplier )
+  
+  # Get the id's using which
+  idx <- which(wine.scaled_cleansed_iqr[,i] < min | wine.scaled_cleansed_iqr[,i] > max)
+  
+  # Output the number of outliers in each variable
+  print(paste(i, length(idx), sep=' - removing: '))
+  
+  # Append the outliers list
+  iqr_outliers <- c(iqr_outliers, idx) 
+}
+
+# Sorting outliers
+iqr_outliers <- sort(iqr_outliers)
+
+# Remove the outliers
+wine.scaled_cleansed_iqr <- wine.scaled_cleansed_iqr[-iqr_outliers,]
+
+boxplot(wine.scaled_cleansed_iqr, main="Looking at the IQR cleansed data graphically", xlab="Wine Attributes", ylab="Scalled values") 
 
 ```
 
@@ -151,7 +190,7 @@ Now that the data looks a lot cleaner, it's time to start working with the data 
 ```{r}
 set.seed(123)
 
-number_of_clusters <- NbClust(wine.scaled_cleansed,
+number_of_clusters <- NbClust(wine.scaled_cleansed_bp,
                  min.nc=2, max.nc=15,
                  method="kmeans")
 
@@ -170,7 +209,7 @@ To confirm that the accuracy of this result, we can plot the sum of square error
 ```{r}
 sse_list <- 0
 for (i in 1:15){
-  sse_list[i] <- sum(kmeans(wine.scaled_cleansed, centers=i)$withinss)
+  sse_list[i] <- sum(kmeans(wine.scaled_cleansed_bp, centers=i)$withinss)
 }
 
 plot(1:15,
@@ -183,7 +222,7 @@ plot(1:15,
 The histogram backs up the results of nbclust seeing as the 'elbow' of the line as at 2 on the Number of Clusters. So 
 
 ```{r}
-fit.km <- kmeans(data.train, 2)
+fit.km <- kmeans(wine.scaled_cleansed_bp, 2)
 
 ```
 
