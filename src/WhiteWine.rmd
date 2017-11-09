@@ -91,9 +91,6 @@ summary(wine.scaled)
 
 ```{r}
 boxplot(wine.scaled, main="Looking at the data graphically", xlab="Wine Attributes", ylab="Scalled values") 
-#str(wine.scaled$chlorides) 
-#sd(wine.scaled$`fixed acidity`, na.rm=FALSE)
-#sd(wine.scaled$`volatile acidity`, na.rm=FALSE)
 ```
 
 We can see from these box-plots that some attributes seem to have some clear outliers that would suggest erroneous data and not just natural extremes. As such, we can decide that it's worth cleansing the data a little by removing these outliers from the dataset. For example, Alcohol on the most right column seesms to have very clear boundaries as we'd expect from wine; when that is compared with some other attributes, they seem to tell a different story: Chlorides seems to have a lot of values that are in the upper quartile, and a large distance etween min and max values but when you look it you can see there's a gradient that suggests a normal distribution; in contrast to this, the columns Residual Sugar, Free Sulfur Dioxide and Density all seem to not only have relatively large min and max distances but there seem to be uppermost values that with nearest neighbour values that are a relatively large distance away.
@@ -107,45 +104,42 @@ plot(density(wine.scaled$`free sulfur dioxide`))
 plot(density(wine.scaled$`density`))
 ```
 
-In order to work out which attrbitues should be considered to have valid outliers, after some research I found the I could apply colmeans to the various attrbitures to find a number that indacates disparity within that variable; given the value comes out as a positive or negative values I have chosen to squeare the results simply to deal with positive numbers in a linear fashion.
+In order to work out which attributes should be considered to have valid outliers, I've gone with a heuristic approach, choosing to look at the distance between the uppermost outliers for each attribute and it's nearest neighbour.
 
 ```{r}
+#Create a list to populate with our tail neighbour distances
 tail_deltas <- list()
 
 for (attrib in wine.scaled) {
+  #get the last two values
   data_tails <- tail(sort(attrib),2)
+  #push the delta on to our list 
   tail_deltas <- append(tail_deltas, diff(data_tails))
 }
 
-what <- unlist(tail_deltas, recursive=FALSE)
+#We seem to be creating a vector of vectors to we need to flatten this (TODO: Fix if we have time!)
+flattened_delta_list <- unlist(tail_deltas, recursive=FALSE)
 
+#grab out attribute keys to include in our new table/frame
 attributes <- names(wine.scaled)
 
-attributes
-what
-tail_deltas
-
-correct_order
-
-attributes_order <- attributes[correct_order]
-ordered_outlier_vals <- tail_deltas[correct_order]
-
-listOfList <- list(attributes, tail_deltas)
-
-dataframe <- data.frame(attributes = attributes, tail_neighbour_d=I(tail_deltas))
+#make a new dataframe from 
+dataframe <- data.frame(attributes = attributes, tail_neighbour_d=flattened_delta_list)
 dataframe$tail_neighbour_d
-#order(dataframe$tail_neighbour_d)
-#dataframe[ ]
-#setNames(do.call(rbind.data.frame, listOfList), c("col1", "col2"))
 
+#get the order for the nearest neighbour starting with the greatest distance and descending
+neighbout_order <- order(dataframe$tail_neighbour_d, decreasing=TRUE)
 
-ordered <- table(unlist(listOfList))
-asframe <- as.data.frame(ordered)
-colnames(asframe) <- c("attributes", "outlier val")
+#now apply the order to the frame
+dataframe[ neighbout_order, ]
 
-ordered
 ```
 
+Given the findings, I think we can just consider the top five attributes in the above list as ones to cleanse for outliers.
+
+```{r}
+
+```
 
 ## R Markdown
 
