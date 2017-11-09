@@ -110,32 +110,42 @@ plot(density(wine.scaled$`density`))
 In order to work out which attrbitues should be considered to have valid outliers, after some research I found the I could apply colmeans to the various attrbitures to find a number that indacates disparity within that variable; given the value comes out as a positive or negative values I have chosen to squeare the results simply to deal with positive numbers in a linear fashion.
 
 ```{r}
+tail_deltas <- list()
+
+for (attrib in wine.scaled) {
+  data_tails <- tail(sort(attrib),2)
+  tail_deltas <- append(tail_deltas, diff(data_tails))
+}
+
+what <- unlist(tail_deltas, recursive=FALSE)
+
 attributes <- names(wine.scaled)
 
-outlier_indicators <- as.data.frame(colMeans(wine.scaled))
-outlier_indicators2 <- as.data.frame(colMeans(wine.scaled)^2)
-#outlier_indicators_frame <- as.data.frame(outlier_indicators)
-colnames(outlier_indicators) <- "colMeans"
+attributes
+what
+tail_deltas
 
-mylist <- list(attributes = attributes, outlier_indicators = outlier_indicators$colMeans)
-#dt <- table(attributes = attributes, outlier_indicators$colMeans)
-#dt
-#all <- do.call("rbind", mylist)
-#all
-#all$id <- rep(names(mylist), sapply(mylist, nrow))
-
-attributes_order <- attributes[order(outlier_indicators2)]
-attributes_order
-ordered <- as.data.frame(c(attributes_order, outlier_indicators[correct_order,]))
-```
-
-```{r}
-#outlier_indicators <- as.data.frame(colMeans(wine.scaled)^2)
-
-correct_order <- order(outlier_indicators)
 correct_order
-as.data.frame(outlier_indicators[correct_order,])
+
+attributes_order <- attributes[correct_order]
+ordered_outlier_vals <- tail_deltas[correct_order]
+
+listOfList <- list(attributes, tail_deltas)
+
+dataframe <- data.frame(attributes = attributes, tail_neighbour_d=I(tail_deltas))
+dataframe$tail_neighbour_d
+#order(dataframe$tail_neighbour_d)
+#dataframe[ ]
+#setNames(do.call(rbind.data.frame, listOfList), c("col1", "col2"))
+
+
+ordered <- table(unlist(listOfList))
+asframe <- as.data.frame(ordered)
+colnames(asframe) <- c("attributes", "outlier val")
+
+ordered
 ```
+
 
 ## R Markdown
 
