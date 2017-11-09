@@ -135,7 +135,14 @@ dataframe[ neighbout_order, ]
 
 ```
 
-Given the findings, I think we can just consider the top five attributes in the above list as ones to cleanse for outliers.
+Given the findings, I think we can just consider the top five attributes in the above list as ones to cleanse for outliers. A lot of sources online warn against arbitrarily getting rid of outliers because it might be the case that valid information is being lost when what you really wnat to be account for is bad data.
+
+To clarify, the attrbibutes to be processed are:
+- density			
+-	free sulfur dioxide			
+-	residual sugar		
+-	citric acid 		
+-	fixed acidity
 
 ```{r}
 
