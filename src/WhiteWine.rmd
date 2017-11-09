@@ -157,7 +157,13 @@ boxplot(wine.scaled_cleansed, main="Looking at the cleansed data graphically", x
 Now that the data looks a lot cleaner, it's time to start working with the data to try and find the best clustering. To begin with, nbclust will be used to see if that produces anything useful.
 
 ```{r}
+set.seed(123)
 
+number_of_clusters <- NbClust(wine.scaled_cleansed,
+                 min.nc=2, max.nc=15,
+                 method="kmeans")
+
+table(number_of_clusters$Best.n[1,])
 ```
 
 ## R Markdown
