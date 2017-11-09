@@ -34,7 +34,19 @@ library("readxl")
 
 ##Starting off
 
+>You need to conduct the k-means clustering analysis of the white wine sheet. Find the ideal number of clusters (please justify your answer). Choose the best two possible numbers of clusters and perform the k-means algorithm for both candidates. Validate which clustering test is more accurate. For the winning test, get the mean of the each attribute of each group. Before conducting the k-means, please investigate if you need to add in your code any pre-processing task (justify your answer). Write a code in R Studio to address all the above issues. In your report, check the consistency of those produced clusters, with information obtained from column 12.
+
+<!--
+1st Objective (partitioning clustering)
+• Find the ideal number of clusters – justify it by showing all necessary steps/methods, 8
+• K-means with the best two clusters, 8
+• Find the mean of each attribute for the winner cluster, 5
+• Check consistency of your results against column 12, 4
+• Check for any pre-processing tasks 5
+-->
+
 Firstly we need to load the data...
+
 ```{r}
 #going to import the Excel spreadsheet WhiteWine dataset
 # xlsx files
@@ -43,6 +55,7 @@ head(wine.raw)
 ```
 
 Here's a a glance at the datset
+
 ```{r}
 str(wine.raw)
 
@@ -71,15 +84,58 @@ str(wine.q)
 
 Now we scale the data
 ```{r}
-wine.scaled <- scale(wine.all_but_q)
+wine.scaled <- as.data.frame(scale(wine.all_but_q))
 
 summary(wine.scaled)
 ```
 
 ```{r}
-boxplot(wine.scaled, main="Looking at the data graphically") 
+boxplot(wine.scaled, main="Looking at the data graphically", xlab="Wine Attributes", ylab="Scalled values") 
+#str(wine.scaled$chlorides) 
+#sd(wine.scaled$`fixed acidity`, na.rm=FALSE)
+#sd(wine.scaled$`volatile acidity`, na.rm=FALSE)
 ```
 
+We can see from these box-plots that some attributes seem to have some clear outliers that would suggest erroneous data and not just natural extremes. As such, we can decide that it's worth cleansing the data a little by removing these outliers from the dataset. For example, Alcohol on the most right column seesms to have very clear boundaries as we'd expect from wine; when that is compared with some other attributes, they seem to tell a different story: Chlorides seems to have a lot of values that are in the upper quartile, and a large distance etween min and max values but when you look it you can see there's a gradient that suggests a normal distribution; in contrast to this, the columns Residual Sugar, Free Sulfur Dioxide and Density all seem to not only have relatively large min and max distances but there seem to be uppermost values that with nearest neighbour values that are a relatively large distance away.
+
+Below are density line graphs to demonstrate the difference between attributes that don't seem to have outliers compared to those that do.
+
+```{r}
+plot(density(wine.scaled$`alcohol`))
+plot(density(wine.scaled$`chlorides`))
+plot(density(wine.scaled$`free sulfur dioxide`))
+plot(density(wine.scaled$`density`))
+```
+
+In order to work out which attrbitues should be considered to have valid outliers, after some research I found the I could apply colmeans to the various attrbitures to find a number that indacates disparity within that variable; given the value comes out as a positive or negative values I have chosen to squeare the results simply to deal with positive numbers in a linear fashion.
+
+```{r}
+attributes <- names(wine.scaled)
+
+outlier_indicators <- as.data.frame(colMeans(wine.scaled))
+outlier_indicators2 <- as.data.frame(colMeans(wine.scaled)^2)
+#outlier_indicators_frame <- as.data.frame(outlier_indicators)
+colnames(outlier_indicators) <- "colMeans"
+
+mylist <- list(attributes = attributes, outlier_indicators = outlier_indicators$colMeans)
+#dt <- table(attributes = attributes, outlier_indicators$colMeans)
+#dt
+#all <- do.call("rbind", mylist)
+#all
+#all$id <- rep(names(mylist), sapply(mylist, nrow))
+
+attributes_order <- attributes[order(outlier_indicators2)]
+attributes_order
+ordered <- as.data.frame(c(attributes_order, outlier_indicators[correct_order,]))
+```
+
+```{r}
+#outlier_indicators <- as.data.frame(colMeans(wine.scaled)^2)
+
+correct_order <- order(outlier_indicators)
+correct_order
+as.data.frame(outlier_indicators[correct_order,])
+```
 
 ## R Markdown
 
