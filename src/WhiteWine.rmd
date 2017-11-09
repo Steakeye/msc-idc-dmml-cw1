@@ -125,7 +125,6 @@ attributes <- names(wine.scaled)
 
 #make a new dataframe from 
 dataframe <- data.frame(attributes = attributes, tail_neighbour_d=flattened_delta_list)
-dataframe$tail_neighbour_d
 
 #get the order for the nearest neighbour starting with the greatest distance and descending
 neighbout_order <- order(dataframe$tail_neighbour_d, decreasing=TRUE)
@@ -143,6 +142,19 @@ To clarify, the attrbibutes to be processed are:
 -	residual sugar		
 -	citric acid 		
 -	fixed acidity
+
+```{r}
+wine.scaled_cleansed <- wine.scaled[ !(wine.scaled$density %in% boxplot(wine.scaled$density, plot=FALSE)$out), ]
+wine.scaled_cleansed <- wine.scaled_cleansed[ !(wine.scaled_cleansed$`free sulfur dioxide` %in% boxplot(wine.scaled$`free sulfur dioxide`, plot=FALSE)$out), ]
+wine.scaled_cleansed <- wine.scaled_cleansed[ !(wine.scaled_cleansed$`residual sugar` %in% boxplot(wine.scaled_cleansed$`residual sugar`, plot=FALSE)$out), ]
+wine.scaled_cleansed <- wine.scaled_cleansed[ !(wine.scaled_cleansed$`citric acid` %in% boxplot(wine.scaled_cleansed$`citric acid`, plot=FALSE)$out), ]
+wine.scaled_cleansed <- wine.scaled_cleansed[ !(wine.scaled_cleansed$`fixed acidity` %in% boxplot(wine.scaled_cleansed$`fixed acidity`, plot=FALSE)$out), ]
+
+boxplot(wine.scaled_cleansed, main="Looking at the cleansed data graphically", xlab="Wine Attributes", ylab="Scalled values") 
+
+```
+
+Now that the data looks a lot cleaner, it's time to start working with the data to try and find the best clustering. To begin with, nbclust will be used to see if that produces anything useful.
 
 ```{r}
 
