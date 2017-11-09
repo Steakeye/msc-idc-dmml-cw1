@@ -4,33 +4,25 @@ output: html_document
 ---
 
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r}
-# Install and load all packages up-front!
-#pkgs <- c("cluster",  "NbClust")
+```{r, echo=FALSE, include=FALSE}
 mirrorUrl = "http://cran.ma.imperial.ac.uk"
 
-# read xl
+# Install and load all packages up-front!
 if(!require(readxl)) install.packages("readxl",repos = mirrorUrl)
 if(!require(cluster)) install.packages("cluster",repos = mirrorUrl)
 if(!require(NbClust)) install.packages("NbClust",repos = mirrorUrl)
-#install.packages("readxl")
+
 library("readxl")
-
-#install.packages(pkgs)
-#library(NbClust)
-#getwd()
-#myWD = "C:/Users/Lenovo/Documents/R/R-Markdown"
-#setwd(myWD)
-#knitr::opts_knit$set(root.dir = myWD)
-#getwd()
-
 ```
 #Question 1: White Wine clustering
+
+```{r test-main, child = 'test.rmd'}
+```
 
 ##Starting off
 
@@ -166,15 +158,37 @@ number_of_clusters <- NbClust(wine.scaled_cleansed,
 table(number_of_clusters$Best.n[1,])
 ```
 
+```{r}
+barplot(table(number_of_clusters$Best.n[1,]), 
+        xlab="Numer of Clusters",
+        ylab="Number of Criteria",
+        main="Number of Clusters Chosen by 30 Criteria")
+```
+
+To confirm that the accuracy of this result, we can plot the sum of square errors and looks for a ponounced bend in the graph. Where the most pronounced bend is, this is a contender for the value for k.
+
+```{r}
+sse_list <- 0
+for (i in 1:15){
+  sse_list[i] <- sum(kmeans(wine.scaled_cleansed, centers=i)$withinss)
+}
+
+plot(1:15,
+  sse_list,
+  type="b",
+  xlab="Number of Clusters",
+  ylab="Within groups sum of squares")
+```
+
+The histogram backs up the results of nbclust seeing as the 'elbow' of the line as at 2 on the Number of Clusters. So 
+
+```{r}
+fit.km <- kmeans(data.train, 2)
+
+```
+
 ## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
 
 ## Including Plots
 
