@@ -9,15 +9,19 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r, echo=FALSE, include=FALSE}
+```{r, echo=FALSE, include=FALSE, message=FALSE}
 mirrorUrl = "http://cran.ma.imperial.ac.uk"
 
 # Install and load all packages up-front!
-if(!require(readxl)) install.packages("readxl",repos = mirrorUrl)
-if(!require(cluster)) install.packages("cluster",repos = mirrorUrl)
-if(!require(NbClust)) install.packages("NbClust",repos = mirrorUrl)
+if(!require(readxl)) install.packages("readxl", repos = mirrorUrl)
+if(!require(cluster)) install.packages("cluster", repos = mirrorUrl)
+if(!require(NbClust)) install.packages("NbClust", repos = mirrorUrl)
+if(!require(fpc)) install.packages("fpc", repos = mirrorUrl, dependencies = TRUE)
 
 library("readxl")
+library("fpc")
+#library.path <- .libPaths()
+#library("fpc", lib.loc = library.path)
 ```
 #Question 1: White Wine clustering
 
@@ -192,8 +196,8 @@ boxplot(wine.scaled_cleansed_iqr, main="Looking at the IQR cleansed data graphic
 
 Now that the data looks a lot cleaner, it's time to start working with the data to try and find the best clustering. To begin with, nbclust will be used to see if that produces anything useful.
 
-```{r}
-set.seed(123)
+```{r NbClust}
+set.seed(1234)
 
 number_of_clusters <- NbClust(wine.scaled_cleansed_iqr,
                  min.nc=2, max.nc=15,
@@ -209,7 +213,7 @@ barplot(table(number_of_clusters$Best.n[1,]),
         main="Number of Clusters Chosen by 30 Criteria")
 ```
 
-To confirm that the accuracy of this result, we can plot the sum of square errors and looks for a ponounced bend in the graph. Where the most pronounced bend is, this is a contender for the value for k.
+From the bar graph above we can see that there seems to be an clear leader in terms of suggested number of clusters, being k = 2. There are however other values that should be explored to see how they compare: 3, 5 and 14. To confirm that the accuracy of this result in terms of the best contender for, we can plot the sum of square errors and looks for a pronounced bend in the graph. Where the most pronounced bend is, this is a contender for the value for k.
 
 ```{r}
 sse_list <- 0
@@ -224,22 +228,26 @@ plot(1:15,
   ylab="Within groups sum of squares")
 ```
 
-The histogram backs up the results of nbclust seeing as the 'elbow' of the line as at 2 on the Number of Clusters. So 
+The histogram for the Sum of Square Errors partially backs up the results of nbclust seeing as there is 'elbow' on the line at 2 on the Number of Clusters. Having said that, the kink between 5 and 7 suggest that this  range should also be tested for k. 
 
 ```{r}
-fit.km <- kmeans(wine.scaled_cleansed_iqr, 2)
+set.seed(1234)
+fit.km2 <- kmeans(wine.scaled_cleansed_iqr, 2)
+fit.km5 <- kmeans(wine.scaled_cleansed_iqr, 5)
+fit.km6 <- kmeans(wine.scaled_cleansed_iqr, 6)
+fit.km7 <- kmeans(wine.scaled_cleansed_iqr, 7)
+fit.km14 <- kmeans(wine.scaled_cleansed_iqr, 14)
 
+plotcluster(wine.scaled_cleansed_iqr, fit.km2$cluster)
+plotcluster(wine.scaled_cleansed_iqr, fit.km5$cluster)
+plotcluster(wine.scaled_cleansed_iqr, fit.km6$cluster)
+plotcluster(wine.scaled_cleansed_iqr, fit.km7$cluster)
+plotcluster(wine.scaled_cleansed_iqr, fit.km14$cluster)
 ```
 
-## R Markdown
 
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+library(MASS)
+parcoord(data.train, fit.km$cluster)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
