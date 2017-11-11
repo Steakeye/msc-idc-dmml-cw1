@@ -122,7 +122,7 @@ for (attrib in wine.scaled) {
 attributes <- names(wine.scaled)
 
 #make a new dataframe from 
-dataframe <- data.frame(attributes = attributes, tail_neighbour_d=flattened_delta_list)
+dataframe <- data.frame(attributes = attributes, tail_neighbour_d=tail_deltas)
 
 #get the order for the nearest neighbour starting with the greatest distance and descending
 neighbout_order <- order(dataframe$tail_neighbour_d, decreasing=TRUE)
@@ -228,7 +228,7 @@ plot(1:15,
   ylab="Within groups sum of squares")
 ```
 
-The histogram for the Sum of Square Errors partially backs up the results of nbclust seeing as there is 'elbow' on the line at 2 on the Number of Clusters. Having said that, the kink between 5 and 7 suggest that this  range should also be tested for k. 
+The histogram for the Sum of Square Errors partially backs up the results of nbclust seeing as there is 'elbow' on the line at 2 on the Number of Clusters. Having said that, the kink between 5 and 7 suggest that this range should also be tested for k. 
 
 ```{r}
 set.seed(1234)
@@ -238,16 +238,40 @@ fit.km6 <- kmeans(wine.scaled_cleansed_iqr, 6)
 fit.km7 <- kmeans(wine.scaled_cleansed_iqr, 7)
 fit.km14 <- kmeans(wine.scaled_cleansed_iqr, 14)
 
-plotcluster(wine.scaled_cleansed_iqr, fit.km2$cluster)
-plotcluster(wine.scaled_cleansed_iqr, fit.km5$cluster)
-plotcluster(wine.scaled_cleansed_iqr, fit.km6$cluster)
-plotcluster(wine.scaled_cleansed_iqr, fit.km7$cluster)
-plotcluster(wine.scaled_cleansed_iqr, fit.km14$cluster)
+#plotcluster(wine.scaled_cleansed_iqr, fit.km2$cluster)
+#plotcluster(wine.scaled_cleansed_iqr, fit.km5$cluster)
+#plotcluster(wine.scaled_cleansed_iqr, fit.km6$cluster)
+#plotcluster(wine.scaled_cleansed_iqr, fit.km7$cluster)
+#plotcluster(wine.scaled_cleansed_iqr, fit.km14$cluster)
 ```
 
 
 ```{r}
-library(MASS)
-parcoord(data.train, fit.km$cluster)
+#ibrary(MASS)
+#parcoord(wine.scaled_cleansed_iqr, fit.km2$cluster)
 ```
 
+```{r}
+#table(number_of_clusters$Best.n[1,])
+wine.q_table <- table(wine.q)
+wine.q_table
+barplot(wine.q_table,
+        xlab="X",
+        ylab="Y",
+        main="TITLE")
+```
+```{r}
+#confuseTable.km2 <- table(wine.q, fit.km2$cluster)
+#confuseTable.km5 <- table(wine.q, fit.km5$cluster)
+#confuseTable.km6 <- table(wine.q, fit.km6$cluster)
+#confuseTable.km7 <- table(wine.q_table, fit.km7$cluster)
+#confuseTable.km14 <- table(wine.q, fit.km14$cluster)
+
+#confuseTable.km2
+#confuseTable.km5
+#confuseTable.km6
+#confuseTable.km7
+#confuseTable.km14
+
+
+```
