@@ -341,3 +341,60 @@ barplot(table(number_of_clusters_severe_cleanse$Best.n[1,]),
         ylab="Number of Criteria",
         main="Number of Clusters Chosen by 30 Criteria")
 ```
+
+```{r}
+sse_list <- 0
+for (i in 1:15){
+  sse_list[i] <- sum(kmeans(wine.scaled_cleansed_bp_all, centers=i)$withinss)
+}
+
+plot(1:15,
+  sse_list,
+  type="b",
+  xlab="Number of Clusters",
+  ylab="Within groups sum of squares")
+```
+
+```{r}
+
+#If we're going to run tests on the k-means against the data we need to remove the outliers from our quality ccolumn too
+#wine.q_cleansed <- wine.q[-iqr_outliers]
+
+set.seed(1234)
+fit_severe.km2 <- kmeans(wine.scaled_cleansed_bp_all, 2)
+fit_severe.km3 <- kmeans(wine.scaled_cleansed_bp_all, 3)
+fit_severe.km4 <- kmeans(wine.scaled_cleansed_bp_all, 4)
+fit_severe.km5 <- kmeans(wine.scaled_cleansed_bp_all, 5)
+fit_severe.km6 <- kmeans(wine.scaled_cleansed_bp_all, 6)
+fit_severe.km7 <- kmeans(wine.scaled_cleansed_bp_all, 7)
+fit_severe.km11 <- kmeans(wine.scaled_cleansed_bp_all, 11)
+fit_severe.km14 <- kmeans(wine.scaled_cleansed_bp_all, 14)
+
+plotcluster(wine.scaled_cleansed_bp_all, fit_severe.km2$cluster)
+plotcluster(wine.scaled_cleansed_bp_all, fit_severe.km3$cluster)
+plotcluster(wine.scaled_cleansed_bp_all, fit_severe.km4$cluster)
+plotcluster(wine.scaled_cleansed_bp_all, fit_severe.km5$cluster)
+plotcluster(wine.scaled_cleansed_bp_all, fit_severe.km6$cluster)
+plotcluster(wine.scaled_cleansed_bp_all, fit_severe.km7$cluster)
+plotcluster(wine.scaled_cleansed_bp_all, fit_severe.km11$cluster)
+plotcluster(wine.scaled_cleansed_bp_all, fit_severe.km14$cluster)
+```
+
+```{r}
+#confuseTable.km2 <- table(wine.q, fit.km2$cluster)
+#confuseTable.km5 <- table(wine.q, fit.km5$cluster)
+#confuseTable.km6 <- table(wine.q, fit.km6$cluster)
+confuseTable.km7 <- table(wine.q_cleansed, fit_severe.km7$cluster)
+#confuseTable.km14 <- table(wine.q, fit.km14$cluster)
+
+#confuseTable.km2
+#confuseTable.km5
+#confuseTable.km6
+confuseTable.km7
+#confuseTable.km14
+
+library(flexclust)
+randIndex(confuseTable.km7)
+
+#this looks rubbish, let's try creating a factor of category, poor, okay, good and see if that an be matched up to a cluster of 3 (https://www.r-bloggers.com/from-continuous-to-categorical/)
+```
