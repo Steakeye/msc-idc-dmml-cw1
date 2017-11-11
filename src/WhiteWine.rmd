@@ -299,36 +299,45 @@ randIndex(confuseTable.km7)
 
 ```{r}
 wine.properties <- names(wine.all_but_q)
-
+# 
 wine.scaled_cleansed_bp_all <- wine.scaled
 
-for (prop in wine.properties) {
-  print(prop)
-  wine.scaled[prop]
-  #wine.scaled[,prop]
-  col <- wine.scaled_cleansed_bp_all[prop]
-  outlier <- boxplot(col, plot=FALSE)$out
-  indices <- outlier %in% col
-  print("outlier")
-  print(length(outlier))
-  print(outlier)
-  print("indices")
-  print(length(indices))
-  print(indices)
-  #print(col)
-  print(col %in% outlier)
-  #wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all[prop] == outlier) ]
-  #wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(col %in% outlier,]
-}
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$density %in% boxplot(wine.scaled_cleansed_bp_all$density, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$`free sulfur dioxide` %in% boxplot(wine.scaled_cleansed_bp_all$`free sulfur dioxide`, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$`residual sugar` %in% boxplot(wine.scaled_cleansed_bp_all$`residual sugar`, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$`citric acid` %in% boxplot(wine.scaled_cleansed_bp_all$`citric acid`, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$`fixed acidity` %in% boxplot(wine.scaled_cleansed_bp_all$`fixed acidity`, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$`volatile acidity` %in% boxplot(wine.scaled_cleansed_bp_all$`volatile acidity`, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$chlorides %in% boxplot(wine.scaled_cleansed_bp_all$chlorides, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$`total sulfur dioxide` %in% boxplot(wine.scaled_cleansed_bp_all$`total sulfur dioxide`, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$pH %in% boxplot(wine.scaled_cleansed_bp_all$pH, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$sulphates %in% boxplot(wine.scaled_cleansed_bp_all$sulphates, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$alcohol %in% boxplot(wine.scaled_cleansed_bp_all$alcohol, plot=FALSE)$out), ]
 
-rm(outlier)
+# for (prop in wine.properties) {
+#   wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all[prop] %in% boxplot(wine.scaled_cleansed_bp_all[prop], plot=FALSE)$out), ]
+# }
 
-#wine.scaled_cleansed_bp <- wine.scaled[ !(wine.scaled$density %in% boxplot(wine.scaled$density, plot=FALSE)$out), ]
-#wine.scaled_cleansed_bp <- wine.scaled_cleansed_bp[ !(wine.scaled_cleansed_bp$`free sulfur dioxide` %in% boxplot(wine.scaled$`free sulfur dioxide`, #plot=FALSE)$out), ]
-#wine.scaled_cleansed_bp <- wine.scaled_cleansed_bp[ !(wine.scaled_cleansed_bp$`residual sugar` %in% boxplot(wine.scaled_cleansed_bp$`residual sugar`, #plot=FALSE)$out), ]
-#wine.scaled_cleansed_bp <- wine.scaled_cleansed_bp[ !(wine.scaled_cleansed_bp$`citric acid` %in% boxplot(wine.scaled_cleansed_bp$`citric acid`, #plot=FALSE)$out), ]
-#wine.scaled_cleansed_bp <- wine.scaled_cleansed_bp[ !(wine.scaled_cleansed_bp$`fixed acidity` %in% boxplot(wine.scaled_cleansed_bp$`fixed acidity`, #plot=FALSE)$out), ]
+boxplot(wine.scaled_cleansed_bp_all, main="Boxplot all outliers cleansed", xlab="Wine Attributes", ylab="Scalled values")
+```
 
-#boxplot(wine.scaled_cleansed_bp_all, main="Boxplot all outliers cleansed", xlab="Wine Attributes", ylab="Scalled values") 
+```{r NbClust}
+set.seed(1234)
 
+number_of_clusters_severe_cleanse <- NbClust(wine.scaled_cleansed_bp_all,
+                 min.nc=2, max.nc=15,
+                 method="kmeans")
+
+table(number_of_clusters$Best.n[1,])
+```
+
+```{r}
+(number_of_clusters_severe_cleanse)
+```
+
+```{r}
+barplot(table(number_of_clusters_severe_cleanse$Best.n[1,]), 
+        xlab="Numer of Clusters",
+        ylab="Number of Criteria",
+        main="Number of Clusters Chosen by 30 Criteria")
 ```
