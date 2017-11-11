@@ -33,6 +33,8 @@ library("fpc")
 
 >You need to conduct the k-means clustering analysis of the white wine sheet. Find the ideal number of clusters (please justify your answer). Choose the best two possible numbers of clusters and perform the k-means algorithm for both candidates. Validate which clustering test is more accurate. For the winning test, get the mean of the each attribute of each group. Before conducting the k-means, please investigate if you need to add in your code any pre-processing task (justify your answer). Write a code in R Studio to address all the above issues. In your report, check the consistency of those produced clusters, with information obtained from column 12.
 
+In the White Win dataset provided, column 12 is labelled Qualirty; this is a qualitative value assigned by a human through the subjective means of tasting. Essentially, by try to cluster against all variables apart from Quality and then comparing against this variable, we are trying to look for some correlation between all the variables in combination and the subjkective quality of wine.
+
 <!--
 1st Objective (partitioning clustering)
 • Find the ideal number of clusters – justify it by showing all necessary steps/methods, 8
@@ -51,9 +53,10 @@ wine.raw <- read_excel("../data/Whitewine.xlsx")
 head(wine.raw)
 ```
 
-Here's a a glance at the datset
+Here's a glance at the datset
 
 ```{r}
+writeLines("Wine raw data")
 str(wine.raw)
 
 #Normalise the WhiteWine dataset from Excel import
@@ -69,13 +72,16 @@ str(wine.raw)
 #main="Number of Clusters Chosen by 26 Criteria")
 ```
 
-We want to scale the data to allow all attributes to be compared more easily. First of all let's split our data so we have two tables, one with all the attributes of wine and the other just with the humanly percieved quality 
+We want to scale the data to allow all attributes to be compared more easily. First of all let's split our data so we have two tables, one with all the attributes of wine and the other just with the humanly perceived quality. 
 
 ```{r}
 wine.all_but_q <- wine.raw[1:11]
 wine.q <- wine.raw$quality
 
+writeLines("Wine properties")
 str(wine.all_but_q)
+
+writeLines("\nWine quality values")
 str(wine.q)
 #wine.scaled <- scale(wine.raw)
 ```
@@ -84,6 +90,7 @@ Now we scale the data
 ```{r}
 wine.scaled <- as.data.frame(scale(wine.all_but_q))
 
+writeLines("summary of scaled wine data")
 summary(wine.scaled)
 ```
 
@@ -166,14 +173,14 @@ wine.scaled_cleansed_iqr <- wine.scaled
 
 # Create a variable to store the row id's to be removed
 iqr_outliers <- c()
-quartlie_multiplier = 5
+quartile_multiplier = 5
 
 # Loop through the list of columns you specified
 for(i in worst_outliers){
 
   # Get the Min/Max values
-  max <- quantile(wine.scaled_cleansed_iqr[,i],0.75, na.rm=FALSE) + (IQR(wine.scaled_cleansed_iqr[,i], na.rm=FALSE) * quartlie_multiplier )
-  min <- quantile(wine.scaled_cleansed_iqr[,i],0.25, na.rm=FALSE) - (IQR(wine.scaled_cleansed_iqr[,i], na.rm=FALSE) * quartlie_multiplier )
+  max <- quantile(wine.scaled_cleansed_iqr[,i],0.75, na.rm=FALSE) + (IQR(wine.scaled_cleansed_iqr[,i], na.rm=FALSE) * quartile_multiplier )
+  min <- quantile(wine.scaled_cleansed_iqr[,i],0.25, na.rm=FALSE) - (IQR(wine.scaled_cleansed_iqr[,i], na.rm=FALSE) * quartile_multiplier )
   
   # Get the id's using which
   idx <- which(wine.scaled_cleansed_iqr[,i] < min | wine.scaled_cleansed_iqr[,i] > max)
@@ -286,4 +293,42 @@ confuseTable.km7
 
 library(flexclust)
 randIndex(confuseTable.km7)
+
+#this looks rubbish, let's try creating a factor of category, poor, okay, good and see if that an be matched up to a cluster of 3 (https://www.r-bloggers.com/from-continuous-to-categorical/)
+```
+
+```{r}
+wine.properties <- names(wine.all_but_q)
+
+wine.scaled_cleansed_bp_all <- wine.scaled
+
+for (prop in wine.properties) {
+  print(prop)
+  wine.scaled[prop]
+  #wine.scaled[,prop]
+  col <- wine.scaled_cleansed_bp_all[prop]
+  outlier <- boxplot(col, plot=FALSE)$out
+  indices <- outlier %in% col
+  print("outlier")
+  print(length(outlier))
+  print(outlier)
+  print("indices")
+  print(length(indices))
+  print(indices)
+  #print(col)
+  print(col %in% outlier)
+  #wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all[prop] == outlier) ]
+  #wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(col %in% outlier,]
+}
+
+rm(outlier)
+
+#wine.scaled_cleansed_bp <- wine.scaled[ !(wine.scaled$density %in% boxplot(wine.scaled$density, plot=FALSE)$out), ]
+#wine.scaled_cleansed_bp <- wine.scaled_cleansed_bp[ !(wine.scaled_cleansed_bp$`free sulfur dioxide` %in% boxplot(wine.scaled$`free sulfur dioxide`, #plot=FALSE)$out), ]
+#wine.scaled_cleansed_bp <- wine.scaled_cleansed_bp[ !(wine.scaled_cleansed_bp$`residual sugar` %in% boxplot(wine.scaled_cleansed_bp$`residual sugar`, #plot=FALSE)$out), ]
+#wine.scaled_cleansed_bp <- wine.scaled_cleansed_bp[ !(wine.scaled_cleansed_bp$`citric acid` %in% boxplot(wine.scaled_cleansed_bp$`citric acid`, #plot=FALSE)$out), ]
+#wine.scaled_cleansed_bp <- wine.scaled_cleansed_bp[ !(wine.scaled_cleansed_bp$`fixed acidity` %in% boxplot(wine.scaled_cleansed_bp$`fixed acidity`, #plot=FALSE)$out), ]
+
+#boxplot(wine.scaled_cleansed_bp_all, main="Boxplot all outliers cleansed", xlab="Wine Attributes", ylab="Scalled values") 
+
 ```
