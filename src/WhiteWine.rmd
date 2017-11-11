@@ -17,7 +17,8 @@ if(!require(readxl)) install.packages("readxl", repos = mirrorUrl)
 if(!require(cluster)) install.packages("cluster", repos = mirrorUrl)
 if(!require(NbClust)) install.packages("NbClust", repos = mirrorUrl)
 if(!require(fpc)) install.packages("fpc", repos = mirrorUrl, dependencies = TRUE)
-
+if(!require(flexclust)) install.packages("flexclust", repos = mirrorUrl, dependencies = TRUE)
+#
 library("readxl")
 library("fpc")
 #library.path <- .libPaths()
@@ -231,18 +232,28 @@ plot(1:15,
 The histogram for the Sum of Square Errors partially backs up the results of nbclust seeing as there is 'elbow' on the line at 2 on the Number of Clusters. Having said that, the kink between 5 and 7 suggest that this range should also be tested for k. 
 
 ```{r}
+
+#If we're going to run tests on the k-means against the data we need to remove the outliers from our quality ccolumn too
+wine.q_cleansed <- wine.q[-iqr_outliers]
+
 set.seed(1234)
 fit.km2 <- kmeans(wine.scaled_cleansed_iqr, 2)
+fit.km3 <- kmeans(wine.scaled_cleansed_iqr, 3)
+fit.km4 <- kmeans(wine.scaled_cleansed_iqr, 4)
 fit.km5 <- kmeans(wine.scaled_cleansed_iqr, 5)
 fit.km6 <- kmeans(wine.scaled_cleansed_iqr, 6)
 fit.km7 <- kmeans(wine.scaled_cleansed_iqr, 7)
+fit.km11 <- kmeans(wine.scaled_cleansed_iqr, 11)
 fit.km14 <- kmeans(wine.scaled_cleansed_iqr, 14)
 
-#plotcluster(wine.scaled_cleansed_iqr, fit.km2$cluster)
-#plotcluster(wine.scaled_cleansed_iqr, fit.km5$cluster)
-#plotcluster(wine.scaled_cleansed_iqr, fit.km6$cluster)
-#plotcluster(wine.scaled_cleansed_iqr, fit.km7$cluster)
-#plotcluster(wine.scaled_cleansed_iqr, fit.km14$cluster)
+plotcluster(wine.scaled_cleansed_iqr, fit.km2$cluster)
+plotcluster(wine.scaled_cleansed_iqr, fit.km3$cluster)
+plotcluster(wine.scaled_cleansed_iqr, fit.km4$cluster)
+plotcluster(wine.scaled_cleansed_iqr, fit.km5$cluster)
+plotcluster(wine.scaled_cleansed_iqr, fit.km6$cluster)
+plotcluster(wine.scaled_cleansed_iqr, fit.km7$cluster)
+plotcluster(wine.scaled_cleansed_iqr, fit.km11$cluster)
+plotcluster(wine.scaled_cleansed_iqr, fit.km14$cluster)
 ```
 
 
@@ -253,7 +264,7 @@ fit.km14 <- kmeans(wine.scaled_cleansed_iqr, 14)
 
 ```{r}
 #table(number_of_clusters$Best.n[1,])
-wine.q_table <- table(wine.q)
+wine.q_table <- table(wine.q_cleansed)
 wine.q_table
 barplot(wine.q_table,
         xlab="X",
@@ -264,14 +275,15 @@ barplot(wine.q_table,
 #confuseTable.km2 <- table(wine.q, fit.km2$cluster)
 #confuseTable.km5 <- table(wine.q, fit.km5$cluster)
 #confuseTable.km6 <- table(wine.q, fit.km6$cluster)
-#confuseTable.km7 <- table(wine.q_table, fit.km7$cluster)
+confuseTable.km7 <- table(wine.q_cleansed, fit.km7$cluster)
 #confuseTable.km14 <- table(wine.q, fit.km14$cluster)
 
 #confuseTable.km2
 #confuseTable.km5
 #confuseTable.km6
-#confuseTable.km7
+confuseTable.km7
 #confuseTable.km14
 
-
+library(flexclust)
+randIndex(confuseTable.km7)
 ```
