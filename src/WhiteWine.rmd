@@ -214,10 +214,14 @@ set.seed(1234)
 number_of_clusters <- NbClust(wine.scaled_cleansed_iqr,
                  min.nc=2, max.nc=15,
                  method="kmeans")
+```
 
+The follwoing table displays the results recommending potential values for k
+```{r NbClust}
 table(number_of_clusters$Best.n[1,])
 ```
 
+The bar chart more easily conveys this.
 ```{r}
 barplot(table(number_of_clusters$Best.n[1,]), 
         xlab="Numer of Clusters",
@@ -268,13 +272,11 @@ plotcluster(wine.scaled_cleansed_iqr, fit.km14$cluster)
 ```
 
 
-```{r}
-#ibrary(MASS)
-#parcoord(wine.scaled_cleansed_iqr, fit.km2$cluster)
-```
+## MappingFitting the clusters to the data
+
+Now that we have experiemented with various differnt values for k, when applying k-means clustering to the wine data, it's now time to see if it can be fit to the data that delivers anything ibviously meaningful with regards to wine quality. While the strongest cluster coption appears to be 2 I thought it was worth looking at how to map the data against quality by looking at the quality values as though they were factors; so, as you can see in the follwing table, there are only 7 unique values out of 10 possible scores for quality, meaning that trying to fit the data is actually easiest against 7 clusters, one per quality value.
 
 ```{r}
-#table(number_of_clusters$Best.n[1,])
 wine.q_table <- table(wine.q_cleansed)
 wine.q_table
 barplot(wine.q_table,
@@ -299,6 +301,11 @@ randIndex(confuseTable.km7)
 
 #this looks rubbish, let's try creating a factor of category, poor, okay, good and see if that an be matched up to a cluster of 3 (https://www.r-bloggers.com/from-continuous-to-categorical/)
 ```
+### Poor results
+
+Given this low value of 0.03410079, is so far from the ideal, and as can be seen from the matrix, there seems to be a spread across all clusters, we can surmist that either the White Wine dataset was not cleansed thoroughly enough or that k-means clustering i=simply isn't an effective way of determinig quality.
+
+In order to be sure that it is indeed the methodology that is unsuitable rather than the data being insufficiently processed, looking at a more severe form of data cleansing may prove insightful; to that end, removing all boxplot outliers across all variables and running the whole process again is worth it just to see if the results are more conclusive.
 
 ```{r}
 wine.properties <- names(wine.all_but_q)
@@ -330,14 +337,15 @@ set.seed(1234)
 number_of_clusters_severe_cleanse <- NbClust(wine.scaled_cleansed_bp_all,
                  min.nc=2, max.nc=15,
                  method="kmeans")
-
-table(number_of_clusters$Best.n[1,])
 ```
 
-```{r}
-(number_of_clusters_severe_cleanse)
+
+The follwoing table displays the results recommending potential values for k
+```{r NbClust}
+table(number_of_clusters_severe_cleanse$Best.n[1,])
 ```
 
+The bar chart more easily conveys this.
 ```{r}
 barplot(table(number_of_clusters_severe_cleanse$Best.n[1,]), 
         xlab="Numer of Clusters",
@@ -402,3 +410,33 @@ randIndex(confuseTable.km7)
 
 #this looks rubbish, let's try creating a factor of category, poor, okay, good and see if that an be matched up to a cluster of 3 (https://www.r-bloggers.com/from-continuous-to-categorical/)
 ```
+
+##Results so far
+
+Given that the poor value of 0.03410079 for the dataset that was only lightly 'pruned' is actually closer to 1  than the 0.02536692 of the last result, the previous dataset actually led to a better set of clusters to act as predictors of Quality.
+
+### Alternative clusters
+
+It would appear that the less intensive data cleansing was more appropriate if the ARI value is anthing to go by. To refresh what the confusion matrix for that looked like, it is repeated below:
+
+```{r}
+#confuseTable.km2 <- table(wine.q, fit.km2$cluster)
+#confuseTable.km5 <- table(wine.q, fit.km5$cluster)
+#confuseTable.km6 <- table(wine.q, fit.km6$cluster)
+confuseTable.km7 <- table(wine.q_cleansed, fit.km7$cluster)
+#confuseTable.km14 <- table(wine.q, fit.km14$cluster)
+
+#confuseTable.km2
+#confuseTable.km5
+#confuseTable.km6
+confuseTable.km7
+#confuseTable.km14
+
+randIndex(confuseTable.km7)
+
+#this looks rubbish, let's try creating a factor of category, poor, okay, good and see if that an be matched up to a cluster of 3 (https://www.r-bloggers.com/from-continuous-to-categorical/)
+```
+
+If we look at this more closely, we can see that while there are wines of various qualities spread across all clusters, there are some clusters are weighted in favour of higher quality wines or the middle range. From this observation it can be posited that some more meaningful fitting might be found between factors of quality, "Good", "Mediocre" and "Bad". So one final experiment before drawing to a conclusion is to try to fit the data against 3 clusters.
+
+
