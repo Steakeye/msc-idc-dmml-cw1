@@ -18,11 +18,9 @@ if(!require(cluster)) install.packages("cluster", repos = mirrorUrl)
 if(!require(NbClust)) install.packages("NbClust", repos = mirrorUrl)
 if(!require(fpc)) install.packages("fpc", repos = mirrorUrl, dependencies = TRUE)
 if(!require(flexclust)) install.packages("flexclust", repos = mirrorUrl, dependencies = TRUE)
-if(!require(compare)) install.packages("compare", repos = mirrorUrl, dependencies = TRUE)
 #
 library("readxl")
 library("fpc")
-library("compare")
 library("flexclust")
 
 #library.path <- .libPaths()
@@ -30,7 +28,7 @@ library("flexclust")
 ```
 #Question 1: White Wine clustering
 
-```{r test-main, child = 'test.rmd'}
+```{r test-main, child = 'main.Rmd'}
 ```
 
 ##Starting off
@@ -62,18 +60,6 @@ Here's a glance at the datset
 ```{r}
 writeLines("Wine raw data")
 str(wine.raw)
-
-#Normalise the WhiteWine dataset from Excel import
-
-#data.train <- scale(my_data[-1])
-#summary(data.train)
-#nc <- NbClust(data.train,
-#min.nc=2, max.nc=15,
-#method="kmeans") #runtime hangs at this point - needs optimising
-#barplot(table(nc$Best.n[1,]),
-#xlab="Numer of Clusters",
-#ylab="Number of Criteria",
-#main="Number of Clusters Chosen by 26 Criteria")
 ```
 
 We want to scale the data to allow all attributes to be compared more easily. First of all let's split our data so we have two tables, one with all the attributes of wine and the other just with the humanly perceived quality. 
@@ -208,7 +194,7 @@ boxplot(wine.scaled_cleansed_iqr, main="Looking at the IQR cleansed data graphic
 
 Now that the data looks a lot cleaner, it's time to start working with the data to try and find the best clustering. To begin with, nbclust will be used to see if that produces anything useful.
 
-```{r NbClust}
+```{r}
 set.seed(1234)
 
 number_of_clusters <- NbClust(wine.scaled_cleansed_iqr,
@@ -217,7 +203,7 @@ number_of_clusters <- NbClust(wine.scaled_cleansed_iqr,
 ```
 
 The follwoing table displays the results recommending potential values for k
-```{r NbClust}
+```{r}
 table(number_of_clusters$Best.n[1,])
 ```
 
@@ -343,7 +329,7 @@ number_of_clusters_severe_cleanse <- NbClust(wine.scaled_cleansed_bp_all,
 
 
 The follwoing table displays the results recommending potential values for k
-```{r NbClust}
+```{r}
 table(number_of_clusters_severe_cleanse$Best.n[1,])
 ```
 
