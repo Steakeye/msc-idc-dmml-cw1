@@ -18,9 +18,13 @@ if(!require(cluster)) install.packages("cluster", repos = mirrorUrl)
 if(!require(NbClust)) install.packages("NbClust", repos = mirrorUrl)
 if(!require(fpc)) install.packages("fpc", repos = mirrorUrl, dependencies = TRUE)
 if(!require(flexclust)) install.packages("flexclust", repos = mirrorUrl, dependencies = TRUE)
+if(!require(compare)) install.packages("compare", repos = mirrorUrl, dependencies = TRUE)
 #
 library("readxl")
 library("fpc")
+library("compare")
+library("flexclust")
+
 #library.path <- .libPaths()
 #library("fpc", lib.loc = library.path)
 ```
@@ -274,9 +278,9 @@ plotcluster(wine.scaled_cleansed_iqr, fit.km14$cluster)
 wine.q_table <- table(wine.q_cleansed)
 wine.q_table
 barplot(wine.q_table,
-        xlab="X",
-        ylab="Y",
-        main="TITLE")
+        xlab="Quality values",
+        ylab="Frequency",
+        main="Distribution of wines across quality values")
 ```
 ```{r}
 #confuseTable.km2 <- table(wine.q, fit.km2$cluster)
@@ -291,7 +295,6 @@ confuseTable.km7 <- table(wine.q_cleansed, fit.km7$cluster)
 confuseTable.km7
 #confuseTable.km14
 
-library(flexclust)
 randIndex(confuseTable.km7)
 
 #this looks rubbish, let's try creating a factor of category, poor, okay, good and see if that an be matched up to a cluster of 3 (https://www.r-bloggers.com/from-continuous-to-categorical/)
@@ -357,8 +360,10 @@ plot(1:15,
 
 ```{r}
 
-#If we're going to run tests on the k-means against the data we need to remove the outliers from our quality ccolumn too
-#wine.q_cleansed <- wine.q[-iqr_outliers]
+#If we're going to run tests on the k-means against the severelt cleansed data we need to remove the outliers from our quality ccolumn too
+bp_server_outliers <- unique(unlist(mapply(function(x, y) sapply(setdiff(x, y), function(d) which(x==d)), wine.scaled, wine.scaled_cleansed_bp_all)))
+
+wine.q_cleansed_severe <- wine.q[-bp_server_outliers]
 
 set.seed(1234)
 fit_severe.km2 <- kmeans(wine.scaled_cleansed_bp_all, 2)
@@ -384,7 +389,7 @@ plotcluster(wine.scaled_cleansed_bp_all, fit_severe.km14$cluster)
 #confuseTable.km2 <- table(wine.q, fit.km2$cluster)
 #confuseTable.km5 <- table(wine.q, fit.km5$cluster)
 #confuseTable.km6 <- table(wine.q, fit.km6$cluster)
-confuseTable.km7 <- table(wine.q_cleansed, fit_severe.km7$cluster)
+confuseTable.km7 <- table(wine.q_cleansed_severe, fit_severe.km7$cluster)
 #confuseTable.km14 <- table(wine.q, fit.km14$cluster)
 
 #confuseTable.km2
@@ -393,7 +398,6 @@ confuseTable.km7 <- table(wine.q_cleansed, fit_severe.km7$cluster)
 confuseTable.km7
 #confuseTable.km14
 
-library(flexclust)
 randIndex(confuseTable.km7)
 
 #this looks rubbish, let's try creating a factor of category, poor, okay, good and see if that an be matched up to a cluster of 3 (https://www.r-bloggers.com/from-continuous-to-categorical/)
