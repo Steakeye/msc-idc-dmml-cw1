@@ -23,13 +23,16 @@ library("readxl")
 library("fpc")
 library("flexclust")
 ```
+
+<section>
+
 #Question 1: White Wine clustering
 
 ##Starting off
 
 >You need to conduct the k-means clustering analysis of the white wine sheet. Find the ideal number of clusters (please justify your answer). Choose the best two possible numbers of clusters and perform the k-means algorithm for both candidates. Validate which clustering test is more accurate. For the winning test, get the mean of the each attribute of each group. Before conducting the k-means, please investigate if you need to add in your code any pre-processing task (justify your answer). Write a code in R Studio to address all the above issues. In your report, check the consistency of those produced clusters, with information obtained from column 12.
 
-In the White Win dataset provided, column 12 is labelled Qualirty; this is a qualitative value assigned by a human through the subjective means of tasting. Essentially, by try to cluster against all variables apart from Quality and then comparing against this variable, we are trying to look for some correlation between all the variables in combination and the subjkective quality of wine.
+In the White Win dataset provided, column 12 is labelled Quality; this is a qualitative value assigned by a human through the subjective means of tasting. Essentially, by try to cluster against all variables apart from Quality and then comparing against this variable, we are trying to look for some correlation between all the variables in combination and the subjkective quality of wine.
 
 <!--
 1st Objective (partitioning clustering)
@@ -459,3 +462,4 @@ fit.km3$centers
 
 By the looks of it, this use of k-means is simply not appropriate against this set of data; it would seem that either using Principal Component Analysis or applying a method for being selective about which variables are used when looking for certain trends would be required in order to reduce the noise that comes from having so many dimensions. Additionally, would consider initially testing against a smaller sample of data next time before investing so many CPU cycles to this task!
 
+</section>

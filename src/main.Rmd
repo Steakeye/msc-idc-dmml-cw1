@@ -32,17 +32,9 @@ toc-depth: 2
 toc-title: Table of Contents
 ---
 
-#This is the test main view
-
-## second header
-para 1
-
-## third header
-para 2
-
 ```{r WhiteWine, child = 'WhiteWine.rmd'}
 ```
 
+```{r WhiteWine, child = 'WhiteWine2.rmd'}
+```
 
-## 4th header
-para 3/4

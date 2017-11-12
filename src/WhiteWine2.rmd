@@ -23,16 +23,29 @@ library("readxl")
 library("fpc")
 library("flexclust")
 ```
+
+<section>
+
 #Question 2: White Wine clustering (Hierarchical)
 
 ##Starting off
 
->You need to conduct the k-means clustering analysis of the white wine sheet. Find the ideal number of clusters (please justify your answer). Choose the best two possible numbers of clusters and perform the k-means algorithm for both candidates. Validate which clustering test is more accurate. For the winning test, get the mean of the each attribute of each group. Before conducting the k-means, please investigate if you need to add in your code any pre-processing task (justify your answer). Write a code in R Studio to address all the above issues. In your report, check the consistency of those produced clusters, with information obtained from column 12.
+>You need to conduct the hierarchical clustering (agglomerative) clustering analysis of the white wine sheet. Investigate the hclust() function for single, complete, average methods. Create the visualization of all methods using a dendrogram. Look at the cophenetic correlation between each clustering result using cor.dendlist. Discuss the produced results after using the coorplot function. Write a code in R Studio to address all the above
+issues.
 
-In the White Win dataset provided, column 12 is labelled Qualirty; this is a qualitative value assigned by a human through the subjective means of tasting. Essentially, by try to cluster against all variables apart from Quality and then comparing against this variable, we are trying to look for some correlation between all the variables in combination and the subjkective quality of wine.
+...
+
 
 <!--
+2nd Objective (hierarchical clustering)
+• Perform hierarchical clustering (for single, complete, etc) 15
+• Create a dendrogram 5
+• Check the cophenetic correlation and discuss your findings 3
+• Coorplot function and discuss your findings 2
 
+resources:
+https://drive.google.com/file/d/0B-1zDxRmAKmjeTFzM182Szd3WDQ/view
+https://drive.google.com/drive/folders/0B-1zDxRmAKmjdFYxcEVFaFZZcE0
 -->
 
 Firstly we need to load the data...
@@ -79,3 +92,5 @@ We can see from these box-plots that some attributes seem to have some clear out
 ## Conclusion
 
 ...
+
+</section>
