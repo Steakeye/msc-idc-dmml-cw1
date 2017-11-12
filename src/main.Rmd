@@ -1,11 +1,43 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "7BUIS008W Data Mining & Machine Learning - Coursework 1"
+author: "Andrew Keats"
+date: "22 November 2017"
+output:
+  customOutput::html5:
+    css: 
+      - ~/work/study/msc-idc/dmml/cw1/assets/css/modest.css
+      - ~/work/study/msc-idc/dmml/cw1/assets/css/custom.css
+    fig_caption: yes
+    keep_md: yes
+    toc: yes
+    toc_title: Table of Contents?
+    toc_depth: 2
+    template: ~/work/study/msc-idc/dmml/cw1/templates/html5.html
+  html_document:
+    css:
+    - ~/work/study/msc-idc/dmml/cw1/assets/css/modest.css
+    - ~/work/study/msc-idc/dmml/cw1/assets/css/custom.css
+    fig_caption: yes
+    keep_md: yes
+    toc: yes
+    toc-title: Table of Contents
+    toc_depth: 2
+chapters: yes
+fontsize: 12pt
+css: null
+papersize: A4
+abstract: Show evidence of understanding of the clustering and modelling concepts,
+  through the implementation of requested algorithms using real datasets. Implementation
+  is performed in R environment, while students need to perform some critical evaluation
+  of their results.
+toc-depth: 2
+toc-title: Table of Contents!
 ---
 
 #This is the test main view
 
-```{r WhiteWine, child = 'WhiteWine.rmd'}
-```
-```{r WhiteWine, child = 'WhiteWine2.rmd'}
-```
+## second header
+para 1
+
+## third header
+para 2
