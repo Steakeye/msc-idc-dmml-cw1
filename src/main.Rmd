@@ -10,7 +10,6 @@ output:
     fig_caption: yes
     keep_md: yes
     toc: yes
-    toc_title: Table of Contents?
     toc_depth: 2
     template: ~/work/study/msc-idc/dmml/cw1/templates/html5.html
   html_document:
@@ -20,7 +19,6 @@ output:
     fig_caption: yes
     keep_md: yes
     toc: yes
-    toc-title: Table of Contents
     toc_depth: 2
 chapters: yes
 fontsize: 12pt
@@ -31,7 +29,7 @@ abstract: Show evidence of understanding of the clustering and modelling concept
   is performed in R environment, while students need to perform some critical evaluation
   of their results.
 toc-depth: 2
-toc-title: Table of Contents!
+toc-title: Table of Contents
 ---
 
 #This is the test main view
@@ -41,3 +39,10 @@ para 1
 
 ## third header
 para 2
+
+```{r WhiteWine, child = 'WhiteWine.rmd'}
+```
+
+
+## 4th header
+para 3/4
