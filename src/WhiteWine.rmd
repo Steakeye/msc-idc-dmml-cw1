@@ -291,6 +291,8 @@ barplot(wine.q_table,
 confuseTable.km7 <- table(wine.q_cleansed, fit.km7$cluster)
 #confuseTable.km14 <- table(wine.q, fit.km14$cluster)
 
+names(dimnames(confuseTable.km7)) <- list("Quality", "Clusters")
+
 #confuseTable.km2
 #confuseTable.km5
 #confuseTable.km6
@@ -394,19 +396,13 @@ plotcluster(wine.scaled_cleansed_bp_all, fit_severe.km14$cluster)
 ```
 
 ```{r}
-#confuseTable.km2 <- table(wine.q, fit.km2$cluster)
-#confuseTable.km5 <- table(wine.q, fit.km5$cluster)
-#confuseTable.km6 <- table(wine.q, fit.km6$cluster)
-confuseTable.km7 <- table(wine.q_cleansed_severe, fit_severe.km7$cluster)
-#confuseTable.km14 <- table(wine.q, fit.km14$cluster)
+confuseTable_severe.km7 <- table(wine.q_cleansed_severe, fit_severe.km7$cluster)
 
-#confuseTable.km2
-#confuseTable.km5
-#confuseTable.km6
-confuseTable.km7
-#confuseTable.km14
+names(dimnames(confuseTable_severe.km7)) <- list("Quality", "Clusters")
 
-randIndex(confuseTable.km7)
+confuseTable_severe.km7
+
+randIndex(confuseTable_severe.km7)
 
 #this looks rubbish, let's try creating a factor of category, poor, okay, good and see if that an be matched up to a cluster of 3 (https://www.r-bloggers.com/from-continuous-to-categorical/)
 ```
@@ -420,17 +416,8 @@ Given that the poor value of 0.03410079 for the dataset that was only lightly 'p
 It would appear that the less intensive data cleansing was more appropriate if the ARI value is anthing to go by. To refresh what the confusion matrix for that looked like, it is repeated below:
 
 ```{r}
-#confuseTable.km2 <- table(wine.q, fit.km2$cluster)
-#confuseTable.km5 <- table(wine.q, fit.km5$cluster)
-#confuseTable.km6 <- table(wine.q, fit.km6$cluster)
-confuseTable.km7 <- table(wine.q_cleansed, fit.km7$cluster)
-#confuseTable.km14 <- table(wine.q, fit.km14$cluster)
 
-#confuseTable.km2
-#confuseTable.km5
-#confuseTable.km6
 confuseTable.km7
-#confuseTable.km14
 
 randIndex(confuseTable.km7)
 
@@ -439,4 +426,57 @@ randIndex(confuseTable.km7)
 
 If we look at this more closely, we can see that while there are wines of various qualities spread across all clusters, there are some clusters are weighted in favour of higher quality wines or the middle range. From this observation it can be posited that some more meaningful fitting might be found between factors of quality, "Good", "Mediocre" and "Bad". So one final experiment before drawing to a conclusion is to try to fit the data against 3 clusters.
 
+## Creating 3 quality factors & attempting one last fit.
+
+```{r}
+wine.q_cleansed_f3 <- cut(wine.q_cleansed, 3, labels = c("bad", "mediocre", "good"))
+
+confuseTable.km3 <- table(wine.q_cleansed, fit.km3$cluster)
+names(dimnames(confuseTable.km3)) <- list("Quality", "Clusters")
+
+confuseTable.km3_f3 <- table(wine.q_cleansed_f3, fit.km3$cluster)
+names(dimnames(confuseTable.km3_f3)) <- list("Quality", "Clusters")
+
+confuseTable.km3
+randIndex(confuseTable.km3)
+
+writeLines("")
+
+confuseTable.km3_f3
+randIndex(confuseTable.km3_f3)
+```
+
+The results of these other attempts to fit the data against 3 clusters has not yielded (significantly) better results. The very last thing is to see how the suggestion by NbClust works out.
+
+### Fitting to NbClust suggested k = 2
+
+```{r}
+wine.q_cleansed_f2 <- cut(wine.q_cleansed, 2, labels = c("bad", "good"))
+
+confuseTable.km2 <- table(wine.q_cleansed, fit.km2$cluster)
+names(dimnames(confuseTable.km2)) <- list("Quality", "Clusters")
+
+confuseTable.km2_f2 <- table(wine.q_cleansed_f2, fit.km3$cluster)
+names(dimnames(confuseTable.km2_f2)) <- list("Quality", "Clusters")
+
+confuseTable.km2
+randIndex(confuseTable.km2)
+
+writeLines("")
+
+confuseTable.km2_f2
+randIndex(confuseTable.km2_f2)
+```
+
+## Writing up for the best results
+
+According to the ARI values the highest being 0.03450436, for 3 clusters with 7 unique quality values, this would be the most successful k-means clustering of those explored, though only marginally. So before we reach out conclusion it's necessary to display the characteristics of this particular set of clusters for k = 3.
+
+```{r}
+fit.km3
+```
+
+## Conclusion
+
+By the looks of it, this use of k-means is simply not appropriate against this set of data; it would seem that either using Principal Component Analysis or applying a method for being selective about which variables are used when looking for certain trends would be required in order to reduce the noise that comes from having so many dimensions. Additionally, would consider initially testing against a smaller sample of data next time before investing so many CPU cycles to this task!
 
