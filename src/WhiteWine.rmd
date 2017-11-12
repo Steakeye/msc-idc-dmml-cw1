@@ -22,14 +22,8 @@ if(!require(flexclust)) install.packages("flexclust", repos = mirrorUrl, depende
 library("readxl")
 library("fpc")
 library("flexclust")
-
-#library.path <- .libPaths()
-#library("fpc", lib.loc = library.path)
 ```
 #Question 1: White Wine clustering
-
-```{r test-main, child = 'main.Rmd'}
-```
 
 ##Starting off
 
@@ -50,15 +44,13 @@ Firstly we need to load the data...
 
 ```{r}
 #going to import the Excel spreadsheet WhiteWine dataset
-# xlsx files
 wine.raw <- read_excel("../data/Whitewine.xlsx")
-head(wine.raw)
 ```
 
 Here's a glance at the datset
 
 ```{r}
-writeLines("Wine raw data")
+head(wine.raw)
 str(wine.raw)
 ```
 
@@ -68,19 +60,18 @@ We want to scale the data to allow all attributes to be compared more easily. Fi
 wine.all_but_q <- wine.raw[1:11]
 wine.q <- wine.raw$quality
 
-writeLines("Wine properties")
+#Wine properties
 str(wine.all_but_q)
 
-writeLines("\nWine quality values")
+#Wine quality values
 str(wine.q)
-#wine.scaled <- scale(wine.raw)
 ```
 
 Now we scale the data
 ```{r}
 wine.scaled <- as.data.frame(scale(wine.all_but_q))
 
-writeLines("summary of scaled wine data")
+#Summary of scaled wine data
 summary(wine.scaled)
 ```
 
@@ -426,8 +417,6 @@ names(dimnames(confuseTable.km3_f3)) <- list("Quality", "Clusters")
 confuseTable.km3
 randIndex(confuseTable.km3)
 
-writeLines("")
-
 confuseTable.km3_f3
 randIndex(confuseTable.km3_f3)
 ```
@@ -448,8 +437,6 @@ names(dimnames(confuseTable.km2_f2)) <- list("Quality", "Clusters")
 confuseTable.km2
 randIndex(confuseTable.km2)
 
-writeLines("")
-
 confuseTable.km2_f2
 randIndex(confuseTable.km2_f2)
 ```
@@ -459,7 +446,13 @@ randIndex(confuseTable.km2_f2)
 According to the ARI values the highest being 0.03450436, for 3 clusters with 7 unique quality values, this would be the most successful k-means clustering of those explored, though only marginally. So before we reach out conclusion it's necessary to display the characteristics of this particular set of clusters for k = 3.
 
 ```{r}
-fit.km3
+#fit.km3
+
+#K-means clustering with 3 clusters of sizes:
+fit.km3$size
+
+#Cluster means:
+fit.km3$centers
 ```
 
 ## Conclusion
