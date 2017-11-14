@@ -1,4 +1,4 @@
-﻿---
+---
 title: "WhiteWine"
 output: html_document
 ---
@@ -22,6 +22,8 @@ if(!require(flexclust)) install.packages("flexclust", repos = mirrorUrl, depende
 library("readxl")
 library("fpc")
 library("flexclust")
+
+set.seed(1234)
 ```
 
 <section>
@@ -187,8 +189,6 @@ boxplot(wine.scaled_cleansed_iqr, main="Looking at the IQR cleansed data graphic
 Now that the data looks a lot cleaner, it's time to start working with the data to try and find the best clustering. To begin with, nbclust will be used to see if that produces anything useful.
 
 ```{r}
-set.seed(1234)
-
 number_of_clusters <- NbClust(wine.scaled_cleansed_iqr,
                 min.nc=2, max.nc=15,
                 method="kmeans")
@@ -229,7 +229,6 @@ The histogram for the Sum of Square Errors partially backs up the results of nbc
 #If we're going to run tests on the k-means against the data we need to remove the outliers from our quality column too
 wine.q_cleansed <- wine.q[-iqr_outliers]
 
-set.seed(1234)
 fit.km2 <- kmeans(wine.scaled_cleansed_iqr, 2)
 fit.km3 <- kmeans(wine.scaled_cleansed_iqr, 3)
 fit.km4 <- kmeans(wine.scaled_cleansed_iqr, 4)
@@ -254,6 +253,10 @@ plotcluster(wine.scaled_cleansed_iqr, fit.km14$cluster)
 
 Now that we have experimented with various different values for k, when applying k-means clustering to the wine data, it's now time to see if it can be fit to the data that delivers anything obviously meaningful with regards to wine quality. While the strongest cluster option appears to be 2, I thought it was worth looking at how to map the data against quality by looking at the quality values as though they were factors; so, as you can see in the following table, there are only 7 unique values out of 10 possible scores for quality, meaning that trying to fit the data is actually easiest against 7 clusters, one per quality value.
 
+To comapre the clusters to the quality scores we use a Confusion matrix to see where the values lie within those 2 sets of data. Further to that, to evaluate the confusion matrix mathematically, we will apply the Rand Index method, which Wikipedia (https://en.wikipedia.org/wiki/Cluster_analysis#External_evaluation) describes thusly:
+
+>The Rand index computes how similar the clusters (returned by the clustering algorithm) are to the benchmark classifications. One can also view the Rand index as a measure of the percentage of correct decisions made by the algorithm. It can be computed using the following formula RI={\frac {TP+TN}{TP+FP+FN+TN}}
+
 ```{r}
 wine.q_table <- table(wine.q_cleansed)
 wine.q_table
@@ -263,23 +266,13 @@ barplot(wine.q_table,
        main="Distribution of wines across quality values")
 ```
 ```{r}
-#confuseTable.km2 <- table(wine.q, fit.km2$cluster)
-#confuseTable.km5 <- table(wine.q, fit.km5$cluster)
-#confuseTable.km6 <- table(wine.q, fit.km6$cluster)
 confuseTable.km7 <- table(wine.q_cleansed, fit.km7$cluster)
-#confuseTable.km14 <- table(wine.q, fit.km14$cluster)
 
 names(dimnames(confuseTable.km7)) <- list("Quality", "Clusters")
 
-#confuseTable.km2
-#confuseTable.km5
-#confuseTable.km6
 confuseTable.km7
-#confuseTable.km14
 
 randIndex(confuseTable.km7)
-
-#this looks rubbish, let's try creating a factor of category, poor, okay, good and see if that an be matched up to a cluster of 3 (https://www.r-bloggers.com/from-continuous-to-categorical/)
 ```
 ### Poor results
 
@@ -312,8 +305,6 @@ boxplot(wine.scaled_cleansed_bp_all, main="Boxplot all outliers cleansed", xlab=
 ```
 
 ```{r NbClust}
-set.seed(1234)
-
 number_of_clusters_severe_cleanse <- NbClust(wine.scaled_cleansed_bp_all,
                 min.nc=2, max.nc=15,
                 method="kmeans")
@@ -353,7 +344,6 @@ bp_server_outliers <- unique(unlist(mapply(function(x, y) sapply(setdiff(x, y), 
 
 wine.q_cleansed_severe <- wine.q[-bp_server_outliers]
 
-set.seed(1234)
 fit_severe.km2 <- kmeans(wine.scaled_cleansed_bp_all, 2)
 fit_severe.km3 <- kmeans(wine.scaled_cleansed_bp_all, 3)
 fit_severe.km4 <- kmeans(wine.scaled_cleansed_bp_all, 4)
@@ -381,8 +371,6 @@ names(dimnames(confuseTable_severe.km7)) <- list("Quality", "Clusters")
 confuseTable_severe.km7
 
 randIndex(confuseTable_severe.km7)
-
-#this looks rubbish, let's try creating a factor of category, poor, okay, good and see if that an be matched up to a cluster of 3 (https://www.r-bloggers.com/from-continuous-to-categorical/)
 ```
 
 ##Results so far
@@ -398,8 +386,6 @@ It would appear that the less intensive data cleansing was more appropriate if t
 confuseTable.km7
 
 randIndex(confuseTable.km7)
-
-#this looks rubbish, let's try creating a factor of category, poor, okay, good and see if that an be matched up to a cluster of 3 (https://www.r-bloggers.com/from-continuous-to-categorical/)
 ```
 
 If we look at this more closely, we can see that while there are wines of various qualities spread across all clusters, there are some clusters are weighted in favour of higher quality wines or the middle range. From this observation it can be posited that some more meaningful fitting might be found between factors of quality, "Good", "Mediocre" and "Bad". So one final experiment before drawing to a conclusion is to try to fit the data against 3 clusters.
@@ -458,6 +444,6 @@ fit.km3$centers
 
 ## Conclusion
 
-By the looks of it, this use of k-means is simply not appropriate against this set of data; it would seem that either using Principal Component Analysis or applying a method for being selective about which variables are used when looking for certain trends would be required in order to reduce the noise that comes from having so many dimensions. Additionally, would consider initially testing against a smaller sample of data next time before investing so many CPU cycles to this task!
+By the looks of it, this use of k-means is simply not appropriate against this set of data; it would seem that either using Principal Component Analysis or applying a method for being selective about which variables are used when looking for certain trends would be required in order to reduce the noise that comes from having so many dimensions. One tool in Data Science that could have proved beneficial for this would have been Exploratory Data Analysis; finding relationships between different variables and those connections to Quality might have led to a better understanding of factors affecting wine qualities, resulting some idea of how to select only certain variable to apply k-means to. Additionally, would consider initially testing against a smaller sample of data next time before investing so many CPU cycles to this task! 
 
 </section>
