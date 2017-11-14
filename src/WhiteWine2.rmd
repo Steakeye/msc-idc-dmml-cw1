@@ -15,10 +15,12 @@ mirrorUrl = "http://cran.ma.imperial.ac.uk"
 # Install and load all packages up-front!
 if(!require(readxl)) install.packages("readxl", repos = mirrorUrl)
 if(!require(corrplot)) install.packages("corrplot", repos = mirrorUrl)
+if(!require(flexclust)) install.packages("flexclust", repos = mirrorUrl, dependencies = TRUE)
 #
 library("readxl")
 library("dendextend")
 library("corrplot")
+library("flexclust")
 
 set.seed(1234)
 ```
@@ -29,8 +31,7 @@ set.seed(1234)
 
 ##Premise
 
->You need to conduct the hierarchical clustering (agglomerative) clustering analysis of the white wine sheet. Investigate the hclust() function for single, complete, average methods. Create the visualization of all methods using a dendrogram. Look at the cophenetic correlation between each clustering result using cor.dendlist. Discuss the produced results after using the coorplot function. Write a code in R Studio to address all the above
-issues.
+>You need to conduct the hierarchical clustering (agglomerative) clustering analysis of the white wine sheet. Investigate the hclust() function for single, complete, average methods. Create the visualization of all methods using a dendrogram. Look at the cophenetic correlation between each clustering result using cor.dendlist. Discuss the produced results after using the coorplot function. Write a code in R Studio to address all the above issues.
 
 <!--
 2nd Objective (hierarchical clustering)
@@ -72,14 +73,17 @@ str(wine.q)
 wine.scaled <- as.data.frame(scale(wine.all_but_q))
 ```
 
-So here's just the summary of the scaled data
+###Important Pre-processing issue
+In carrying out the experiments with creating the 3 clusters and then comparing them, I experienced an issue with the R runtime due to the sheer size of the dataset and how was transformed into complexity of the hierarchical clusters; the console reported a `nost stack overflow` and after some research online the only option was to use a smaller dataset. In the previous code block you can see the `sample` sunction used to reduce the dasaset to be studied to approximately two-thirds of the original size. Unfortunately, this may well have an adverse impact on results but there's not much I can do about that apart from maybe run the clustering again (multiple times) but with a fresh sample of the same size and then see if there's much variation.
+
+That issue aside, what follows is the summary of the sampled & scaled data.
 ```{r}
 summary(wine.scaled)
 ```
 
 ###Hierarchical clustering
 
-Hierarchical clustering methods use a distance matrix as input for the algorithms; to that end, we need to transofrm the scaled date into a distance matrix before we pass it into our hierarchical clusting function.
+Hierarchical clustering methods use a distance matrix as input for the algorithms; to that end, we need to transofrm the scaled date into a distance matrix before we pass it into our hierarchical clustering function.
 
 ```{r}
 wine.dist_matrix_euclidean <- dist(wine.scaled) # Euclidean distance matrix.
@@ -118,9 +122,9 @@ My observation from the cut trees is that unless the data is especially skewed, 
 
 ```{r}
 d_list <- dendlist(
-  wine.hclust_single %>% as.dendrogram,
-  wine.hclust_complete %>% as.dendrogram,
-  wine.hclust_average %>% as.dendrogram
+  "Single" = wine.hclust_single %>% as.dendrogram,
+  "Complete" = wine.hclust_complete %>% as.dendrogram,
+  "Average" = wine.hclust_average %>% as.dendrogram
 )
 
 cophentic_coefficient <- cor.dendlist(d_list, "cophenetic")
@@ -136,8 +140,103 @@ corrplot(cophentic_coefficient, "pie", "lower")
 
 ```
 
+While we can see from coorplot, of even the corresponding table that the "Single" and "Average" dendrograms are 74% alike, this doesn't mean they are better! We can run the hierarchical clustering through a confusion matrix as we did with k-means and find that the results do not give us any meaningdul relationship to Wine Quality. In fact all clustering methods used have ended with a massive bias towards one single cluster for which most nodes belong, across all qualities of wine!
+
+```{r}
+hclust_single_g7_table <- table(wine.q, wine.hclust_single_g7)
+names(dimnames(hclust_single_g7_table)) <- list("Quality", "Clusters")
+hclust_single_g7_table
+randIndex(hclust_single_g7_table)
+
+hclust_complete_g7_table <- table(wine.q, wine.hclust_complete_g7)
+names(dimnames(hclust_complete_g7_table)) <- list("Quality", "Clusters")
+hclust_complete_g7_table
+randIndex(hclust_complete_g7_table)
+
+hclust_average_g7_table <- table(wine.q, wine.hclust_average_g7)
+names(dimnames(hclust_average_g7_table)) <- list("Quality", "Clusters")
+hclust_average_g7_table
+randIndex(hclust_average_g7_table)
+```
+
+##Trying again with cleansed data
+
+Just in case outliers have skewed the outcomes I'm going to run all cluster calls with data that has had outliers removed, using the bxoplot method.
+
+```{r}
+wine.scaled_cleansed_bp_all <- wine.scaled
+
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$density %in% boxplot(wine.scaled_cleansed_bp_all$density, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$`free sulfur dioxide` %in% boxplot(wine.scaled_cleansed_bp_all$`free sulfur dioxide`, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$`residual sugar` %in% boxplot(wine.scaled_cleansed_bp_all$`residual sugar`, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$`citric acid` %in% boxplot(wine.scaled_cleansed_bp_all$`citric acid`, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$`fixed acidity` %in% boxplot(wine.scaled_cleansed_bp_all$`fixed acidity`, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$`volatile acidity` %in% boxplot(wine.scaled_cleansed_bp_all$`volatile acidity`, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$chlorides %in% boxplot(wine.scaled_cleansed_bp_all$chlorides, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$`total sulfur dioxide` %in% boxplot(wine.scaled_cleansed_bp_all$`total sulfur dioxide`, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$pH %in% boxplot(wine.scaled_cleansed_bp_all$pH, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$sulphates %in% boxplot(wine.scaled_cleansed_bp_all$sulphates, plot=FALSE)$out), ]
+wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$alcohol %in% boxplot(wine.scaled_cleansed_bp_all$alcohol, plot=FALSE)$out), ]
+
+wine_cleansed.dist_matrix_euclidean <- dist(wine.scaled_cleansed_bp_all) # Euclidean distance matrix.
+summary(wine_cleansed.dist_matrix_euclidean)
+```
+
+Now we can start clustering data using the hclust library. As per the requirements of this question we are calling hclust 3 times, to evaluate the "single", "complete" and "average" methods for heirarchical clustering. Assuming this hierarchcal clustering is meant to try and find relationships between the quantitative Wine properties and Wine quality, and knowing from the previous question that there are only 7 unique values for quality across the entire dataset, the next step is to cut out cluster trees to only have 7 branches.
+
+```{r}
+wine_cleansed.hclust_single <- hclust(wine_cleansed.dist_matrix_euclidean, method = "single")
+wine_cleansed.hclust_complete <- hclust(wine_cleansed.dist_matrix_euclidean, method = "complete")
+wine_cleansed.hclust_average <- hclust(wine_cleansed.dist_matrix_euclidean, method = "average")
+
+#Display dendrograms
+plot(wine_cleansed.hclust_single, main="Hierarchical clustering White Wine", sub = "Single method", labels=FALSE)
+rect.hclust(wine_cleansed.hclust_single, k=7, border="green") 
+plot(wine_cleansed.hclust_complete, main="Hierarchical clustering White Wine", sub = "Complete method", labels=FALSE)
+rect.hclust(wine_cleansed.hclust_complete, k=7, border="green") 
+plot(wine_cleansed.hclust_average, main="Hierarchical clustering White Wine", sub = "Average method", labels=FALSE)
+rect.hclust(wine_cleansed.hclust_average, k=7, border="green") 
+
+wine_cleansed.hclust_single_g7 <- cutree(wine.hclust_single, k=7)
+table(wine_cleansed.hclust_single_g7)
+
+wine_cleansed.hclust_complete_g7 <- cutree(wine.hclust_complete, k=7)
+table(wine_cleansed.hclust_complete_g7)
+
+wine_cleansed.hclust_average_g7 <- cutree(wine.hclust_average, k=7)
+table(wine_cleansed.hclust_average_g7)
+```
+
+Interestingly, it's already apparent from the dendrograms that the "single" and "average" trees are less similar with this set of data, and the "average" is now somewhere inbetween the "single" and "complete" while the "single" outcome remains largely unchanged. As such, I think it merits the expense of ploting the diamgrams to visually display the statistical comparison.
+
+```{r}
+cleansed_d_list <- dendlist(
+  "Single" = wine_cleansed.hclust_single %>% as.dendrogram,
+  "Complete" = wine_cleansed.hclust_complete %>% as.dendrogram,
+  "Average" = wine_cleansed.hclust_average %>% as.dendrogram
+)
+
+cleansed_cophentic_coefficient <- cor.dendlist(d_list, "cophenetic")
+```
+```{r}
+# Print correlation matrix
+round(cleansed_cophentic_coefficient, 2)
+
+corrplot(cleansed_cophentic_coefficient, "pie", "lower")
+
+```
+<!--I'm not going to bother running `cor.dendlist(` on this subset of the data because it's expensive and I can already tell from the diagrams that no much has changed with regard to the comparative strcutures of the tree; I will however derive a confustion matric and Rand index for the cluster results that used the "complete" method, just in case removing outliers had any improvement.-->
+
+```{r}
+wine_cleansed.hclust_complete_g7_table <- table(wine.q, wine_cleansed.hclust_complete_g7)
+names(dimnames(wine_cleansed.hclust_complete_g7_table)) <- list("Quality", "Clusters")
+wine_cleansed.hclust_complete_g7_table
+randIndex(wine_cleansed.hclust_complete_g7_table)
+```
+
 ## Conclusion
 
-...
+Using hierarchical clustering over this dataset has not proved very insightful, in fact less colrrelation was found between qualty and cluster than with the k-means method. Also, the size of the dataset and the complexity of agglomerative clustering, {\mathcal {O}}(n^{2}\log(n)) makes the method unsuitable for the oringal size of the dataset.
+
 
 </section>

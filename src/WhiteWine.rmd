@@ -273,7 +273,6 @@ names(dimnames(confuseTable.km7)) <- list("Quality", "Clusters")
 confuseTable.km7
 
 randIndex(confuseTable.km7)
-
 ```
 ### Poor results
 
@@ -372,8 +371,6 @@ names(dimnames(confuseTable_severe.km7)) <- list("Quality", "Clusters")
 confuseTable_severe.km7
 
 randIndex(confuseTable_severe.km7)
-
-#this looks rubbish, let's try creating a factor of category, poor, okay, good and see if that an be matched up to a cluster of 3 (https://www.r-bloggers.com/from-continuous-to-categorical/)
 ```
 
 ##Results so far
@@ -389,8 +386,6 @@ It would appear that the less intensive data cleansing was more appropriate if t
 confuseTable.km7
 
 randIndex(confuseTable.km7)
-
-#this looks rubbish, let's try creating a factor of category, poor, okay, good and see if that an be matched up to a cluster of 3 (https://www.r-bloggers.com/from-continuous-to-categorical/)
 ```
 
 If we look at this more closely, we can see that while there are wines of various qualities spread across all clusters, there are some clusters are weighted in favour of higher quality wines or the middle range. From this observation it can be posited that some more meaningful fitting might be found between factors of quality, "Good", "Mediocre" and "Bad". So one final experiment before drawing to a conclusion is to try to fit the data against 3 clusters.
