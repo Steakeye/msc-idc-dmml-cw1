@@ -14,27 +14,23 @@ mirrorUrl = "http://cran.ma.imperial.ac.uk"
 
 # Install and load all packages up-front!
 if(!require(readxl)) install.packages("readxl", repos = mirrorUrl)
-if(!require(cluster)) install.packages("cluster", repos = mirrorUrl)
-if(!require(NbClust)) install.packages("NbClust", repos = mirrorUrl)
-if(!require(fpc)) install.packages("fpc", repos = mirrorUrl, dependencies = TRUE)
-if(!require(flexclust)) install.packages("flexclust", repos = mirrorUrl, dependencies = TRUE)
+#if(!require(cluster)) install.packages("cluster", repos = mirrorUrl)
+#if(!require(fpc)) install.packages("fpc", repos = mirrorUrl, dependencies = TRUE)
+#if(!require(flexclust)) install.packages("flexclust", repos = mirrorUrl, dependencies = TRUE)
 #
 library("readxl")
-library("fpc")
-library("flexclust")
+#library("fpc")
+#library("flexclust")
 ```
 
 <section>
 
 #Question 2: White Wine clustering (Hierarchical)
 
-##Starting off
+##Premise
 
 >You need to conduct the hierarchical clustering (agglomerative) clustering analysis of the white wine sheet. Investigate the hclust() function for single, complete, average methods. Create the visualization of all methods using a dendrogram. Look at the cophenetic correlation between each clustering result using cor.dendlist. Discuss the produced results after using the coorplot function. Write a code in R Studio to address all the above
 issues.
-
-...
-
 
 <!--
 2nd Objective (hierarchical clustering)
@@ -48,23 +44,15 @@ https://drive.google.com/file/d/0B-1zDxRmAKmjeTFzM182Szd3WDQ/view
 https://drive.google.com/drive/folders/0B-1zDxRmAKmjdFYxcEVFaFZZcE0
 -->
 
-Firstly we need to load the data...
+##Preparation of data
 
-```{r}
+As with Question 1, the data needs to be loaded, paritioned, then scaled. Assuming that this has all been done as before - there's no need to demonstrate the exact same execution of code - we can simply demonstrate we have our data ready to work with.
+
+```{r, echo=FALSE, include=FALSE, message=FALSE}
 #going to import the Excel spreadsheet WhiteWine dataset
 wine.raw <- read_excel("../data/Whitewine.xlsx")
-```
 
-Here's a glance at the datset
-
-```{r}
-head(wine.raw)
-str(wine.raw)
-```
-
-We want to scale the data to allow all attributes to be compared more easily. First of all let's split our data so we have two tables, one with all the attributes of wine and the other just with the humanly perceived quality. 
-
-```{r}
+#Separating wine data from quality column
 wine.all_but_q <- wine.raw[1:11]
 wine.q <- wine.raw$quality
 
@@ -73,21 +61,37 @@ str(wine.all_but_q)
 
 #Wine quality values
 str(wine.q)
+
+#Now we scale the data
+wine.scaled <- as.data.frame(scale(wine.all_but_q))
 ```
 
-Now we scale the data
+So here's just the summary of the scaled data
 ```{r}
-wine.scaled <- as.data.frame(scale(wine.all_but_q))
-
-#Summary of scaled wine data
 summary(wine.scaled)
 ```
 
+###Hierarchical clustering
+
+Hierarchical clustering methods use a distance matrix as input for the algorithms; to that end, we need to transofrm the scaled date into a distance matrix before we pass it into our hierarchical clusting function.
+
 ```{r}
-boxplot(wine.scaled, main="Looking at the data graphically", xlab="Wine Attributes", ylab="Scalled values") 
+wine.dist_matrix_euclidean <- dist(wine.scaled) # Euclidean distance matrix.
+summary(wine.dist_matrix_euclidean)
 ```
 
-We can see from these box-plots that some attributes seem to have some clear outliers that would suggest erroneous data and not just natural extremes. As such, we can decide that it's worth cleansing the data a little by removing these outliers from the dataset. For example, Alcohol on the most right column seesms to have very clear boundaries as we'd expect from wine; when that is compared with some other attributes, they seem to tell a different story: Chlorides seems to have a lot of values that are in the upper quartile, and a large distance etween min and max values but when you look it you can see there's a gradient that suggests a normal distribution; in contrast to this, the columns Residual Sugar, Free Sulfur Dioxide and Density all seem to not only have relatively large min and max distances but there seem to be uppermost values that with nearest neighbour values that are a relatively large distance away.
+Now we can start clustering data using the hclust library. As per the requirements of this question we are calling hclust 3 times, to evaluate the "single", "complete" and "average" methods for heirarchical clustering.
+```{r}
+wine.hclust_single <- hclust(wine.dist_matrix_euclidean, method = "single")
+wine.hclust_complete <- hclust(wine.dist_matrix_euclidean, method = "complete")
+wine.hclust_average <- hclust(wine.dist_matrix_euclidean, method = "average")
+
+#Display dendrograms
+plot(wine.hclust_single, main="Hierarchical clustering White Wine", sub = "Single method")
+plot(wine.hclust_complete, main="Hierarchical clustering White Wine", sub = "Complete method")
+plot(wine.hclust_average, main="Hierarchical clustering White Wine", sub = "Average method")
+```
+
 
 ## Conclusion
 
