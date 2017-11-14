@@ -14,6 +14,7 @@ mirrorUrl = "http://cran.ma.imperial.ac.uk"
 
 # Install and load all packages up-front!
 if(!require(readxl)) install.packages("readxl", repos = mirrorUrl)
+if(!require(corrplot)) install.packages("corrplot", repos = mirrorUrl)
 #
 library("readxl")
 library("dendextend")
@@ -51,8 +52,12 @@ As with Question 1, the data needs to be loaded, paritioned, then scaled. Assumi
 #going to import the Excel spreadsheet WhiteWine dataset
 wine.raw <- read_excel("../data/Whitewine.xlsx")
 
+#Sample the wine..?
+samp <- sample(nrow(wine.scaled), 0.6 * nrow(wine.scaled))
+wine.sampled <- wine.scaled[samp, ]
+
 #Separating wine data from quality column
-wine.all_but_q <- wine.raw[1:11]
+wine.all_but_q <- wine.sampled[1:11]
 wine.q <- wine.raw$quality
 
 #Wine properties
@@ -87,11 +92,11 @@ wine.hclust_complete <- hclust(wine.dist_matrix_euclidean, method = "complete")
 wine.hclust_average <- hclust(wine.dist_matrix_euclidean, method = "average")
 
 #Display dendrograms
-plot(wine.hclust_single, main="Hierarchical clustering White Wine", sub = "Single method")
+plot(wine.hclust_single, main="Hierarchical clustering White Wine", sub = "Single method", labels=FALSE)
 rect.hclust(wine.hclust_single, k=7, border="green") 
-plot(wine.hclust_complete, main="Hierarchical clustering White Wine", sub = "Complete method")
+plot(wine.hclust_complete, main="Hierarchical clustering White Wine", sub = "Complete method", labels=FALSE)
 rect.hclust(wine.hclust_complete, k=7, border="green") 
-plot(wine.hclust_average, main="Hierarchical clustering White Wine", sub = "Average method")
+plot(wine.hclust_average, main="Hierarchical clustering White Wine", sub = "Average method", labels=FALSE)
 rect.hclust(wine.hclust_average, k=7, border="green") 
 
 wine.hclust_single_g7 <- cutree(wine.hclust_single, k=7)
@@ -118,7 +123,7 @@ d_list <- dendlist(
 
 cophentic_coefficient <- cor.dendlist(d_list, "cophenetic")
 
-#corrplot(cor.dendlist(dend1234), "pie", "lower")
+corrplot(cophentic_coefficient, "pie", "lower")
 
 ```
 
