@@ -53,12 +53,14 @@ As with Question 1, the data needs to be loaded, paritioned, then scaled. Assumi
 wine.raw <- read_excel("../data/Whitewine.xlsx")
 
 #Sample the wine..?
-samp <- sample(nrow(wine.scaled), 0.6 * nrow(wine.scaled))
+samp <- sample(nrow(wine.scaled), 0.7 * nrow(wine.scaled))
 wine.sampled <- wine.scaled[samp, ]
 
 #Separating wine data from quality column
 wine.all_but_q <- wine.sampled[1:11]
-wine.q <- wine.raw$quality
+#wine.all_but_q <- wine.raw[1:11]
+wine.q <- wine.sampled$quality
+#wine.q <- wine.raw$quality
 
 #Wine properties
 str(wine.all_but_q)
