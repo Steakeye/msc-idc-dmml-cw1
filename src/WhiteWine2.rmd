@@ -216,7 +216,7 @@ cleansed_d_list <- dendlist(
   "Average" = wine_cleansed.hclust_average %>% as.dendrogram
 )
 
-cleansed_cophentic_coefficient <- cor.dendlist(d_list, "cophenetic")
+cleansed_cophentic_coefficient <- cor.dendlist(cleansed_d_list, "cophenetic")
 ```
 ```{r}
 # Print correlation matrix
@@ -227,6 +227,8 @@ corrplot(cleansed_cophentic_coefficient, "pie", "lower")
 ```
 <!--I'm not going to bother running `cor.dendlist(` on this subset of the data because it's expensive and I can already tell from the diagrams that no much has changed with regard to the comparative strcutures of the tree; I will however derive a confustion matric and Rand index for the cluster results that used the "complete" method, just in case removing outliers had any improvement.-->
 
+The results above suggest that removing outlies makes a massive difference to how these methods operate; this must be considered in particular with my choice os keeping with the Euclisean type of distance matrix.
+
 ```{r}
 wine_cleansed.hclust_complete_g7_table <- table(wine.q, wine_cleansed.hclust_complete_g7)
 names(dimnames(wine_cleansed.hclust_complete_g7_table)) <- list("Quality", "Clusters")
@@ -236,7 +238,7 @@ randIndex(wine_cleansed.hclust_complete_g7_table)
 
 ## Conclusion
 
-Using hierarchical clustering over this dataset has not proved very insightful, in fact less colrrelation was found between qualty and cluster than with the k-means method. Also, the size of the dataset and the complexity of agglomerative clustering, {\mathcal {O}}(n^{2}\log(n)) makes the method unsuitable for the oringal size of the dataset.
+Using hierarchical clustering over this dataset has not proved very insightful, in fact less colrrelation was found between qualty and cluster than with the k-means method. Also, the size of the dataset and the complexity of agglomerative clustering, {\mathcal {O}}(n^{2}\log(n)) makes the method unsuitable for the oringal size of the dataset. Even though the hierarchical cluster results haven't shown obvousl relationship to Wine Quality; seeing the dendrograms and the `coorplot` output, if I were to use this method of clustering in the future, assuming the Euclidean distance matrix, I think I would definitely have preferences and less favoured clustering methods: I would imagine that the "single" method which clusters just by finding the nearest point between groups of child nodes would be the bottom of my list; think I would pick "Complete" (grouping clusters based on maximum distance) over "Average" though I think more reseashon this would have to be done in order to get a more informed decision as to why, beyond my own findings.
 
 
 </section>
