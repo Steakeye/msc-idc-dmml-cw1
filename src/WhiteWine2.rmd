@@ -113,7 +113,7 @@ table(wine.hclust_average_g7)
 
 ###Interpreting the data
 
-My observation from the cut trees is that unless the data is especially skewed, it seems like using the Complete method is the one method of the three tried that might have any hope of clustering in a way that could correlate, albeit weakly, with Quality. Having said that
+My observation from the cut trees is that unless the data is especially skewed, it seems like using the Complete method is the one method of the three tried that might have any hope of clustering in a way that could correlate, albeit weakly, with Quality. Having said that, this is not the main task of this question, which is to compare the dendrograms against one another to see how similar they are; To do this we convert the lcuster models to the dendrogram data type before using `cor.dendlist` to cross-compare the trees.
 
 
 ```{r}
@@ -126,7 +126,12 @@ d_list <- dendlist(
 cophentic_coefficient <- cor.dendlist(d_list, "cophenetic")
 ```
 
+Below is a matrix where the dendrograms are compared on a scale of 0 to 1 where 1 is 100% parity; below that is a digram expressing the same data but using bpie charts to convey the information. By the share of the pies, we can see that the "single" (1) and "average" (3) methods deliver trees that are more similar to eachother than they are to "complete".
+
 ```{r}
+# Print correlation matrix
+round(cophentic_coefficient, 2)
+
 corrplot(cophentic_coefficient, "pie", "lower")
 
 ```
