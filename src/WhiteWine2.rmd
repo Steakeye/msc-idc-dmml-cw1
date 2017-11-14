@@ -52,9 +52,9 @@ As with Question 1, the data needs to be loaded, paritioned, then scaled. Assumi
 #going to import the Excel spreadsheet WhiteWine dataset
 wine.raw <- read_excel("../data/Whitewine.xlsx")
 
-#Sample the wine..?
-samp <- sample(nrow(wine.scaled), 0.7 * nrow(wine.scaled))
-wine.sampled <- wine.scaled[samp, ]
+#Sample the wine..? Due to a node stack overflow when conducting cor.dendlist I've had to use a subset of the data
+samp <- sample(nrow(wine.raw), 0.66 * nrow(wine.raw))
+wine.sampled <- wine.raw[samp, ]
 
 #Separating wine data from quality column
 wine.all_but_q <- wine.sampled[1:11]
@@ -124,7 +124,9 @@ d_list <- dendlist(
 )
 
 cophentic_coefficient <- cor.dendlist(d_list, "cophenetic")
+```
 
+```{r}
 corrplot(cophentic_coefficient, "pie", "lower")
 
 ```
