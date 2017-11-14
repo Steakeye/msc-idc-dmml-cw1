@@ -14,13 +14,12 @@ mirrorUrl = "http://cran.ma.imperial.ac.uk"
 
 # Install and load all packages up-front!
 if(!require(readxl)) install.packages("readxl", repos = mirrorUrl)
-#if(!require(cluster)) install.packages("cluster", repos = mirrorUrl)
-#if(!require(fpc)) install.packages("fpc", repos = mirrorUrl, dependencies = TRUE)
-#if(!require(flexclust)) install.packages("flexclust", repos = mirrorUrl, dependencies = TRUE)
 #
 library("readxl")
-#library("fpc")
-#library("flexclust")
+library("dendextend")
+library("corrplot")
+
+set.seed(1234)
 ```
 
 <section>
@@ -80,7 +79,8 @@ wine.dist_matrix_euclidean <- dist(wine.scaled) # Euclidean distance matrix.
 summary(wine.dist_matrix_euclidean)
 ```
 
-Now we can start clustering data using the hclust library. As per the requirements of this question we are calling hclust 3 times, to evaluate the "single", "complete" and "average" methods for heirarchical clustering.
+Now we can start clustering data using the hclust library. As per the requirements of this question we are calling hclust 3 times, to evaluate the "single", "complete" and "average" methods for heirarchical clustering. Assuming this hierarchcal clustering is meant to try and find relationships between the quantitative Wine properties and Wine quality, and knowing from the previous question that there are only 7 unique values for quality across the entire dataset, the next step is to cut out cluster trees to only have 7 branches.
+
 ```{r}
 wine.hclust_single <- hclust(wine.dist_matrix_euclidean, method = "single")
 wine.hclust_complete <- hclust(wine.dist_matrix_euclidean, method = "complete")
@@ -88,10 +88,39 @@ wine.hclust_average <- hclust(wine.dist_matrix_euclidean, method = "average")
 
 #Display dendrograms
 plot(wine.hclust_single, main="Hierarchical clustering White Wine", sub = "Single method")
+rect.hclust(wine.hclust_single, k=7, border="green") 
 plot(wine.hclust_complete, main="Hierarchical clustering White Wine", sub = "Complete method")
+rect.hclust(wine.hclust_complete, k=7, border="green") 
 plot(wine.hclust_average, main="Hierarchical clustering White Wine", sub = "Average method")
+rect.hclust(wine.hclust_average, k=7, border="green") 
+
+wine.hclust_single_g7 <- cutree(wine.hclust_single, k=7)
+table(wine.hclust_single_g7)
+
+wine.hclust_complete_g7 <- cutree(wine.hclust_complete, k=7)
+table(wine.hclust_complete_g7)
+
+wine.hclust_average_g7 <- cutree(wine.hclust_average, k=7)
+table(wine.hclust_average_g7)
 ```
 
+###Interpreting the data
+
+My observation from the cut trees is that unless the data is especially skewed, it seems like using the Complete method is the one method of the three tried that might have any hope of clustering in a way that could correlate, albeit weakly, with Quality. Having said that
+
+
+```{r}
+d_list <- dendlist(
+  wine.hclust_single %>% as.dendrogram,
+  wine.hclust_complete %>% as.dendrogram,
+  wine.hclust_average %>% as.dendrogram
+)
+
+cophentic_coefficient <- cor.dendlist(d_list, "cophenetic")
+
+#corrplot(cor.dendlist(dend1234), "pie", "lower")
+
+```
 
 ## Conclusion
 
