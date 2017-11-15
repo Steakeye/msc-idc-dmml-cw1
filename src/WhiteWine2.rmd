@@ -1,15 +1,15 @@
 ---
-title: "WhiteWine"
+title: "WhiteWine2"
 output: html_document
 ---
 
 
-```{r setup, include=FALSE, message=FALSE}
+```{r setup-ww2, include=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r, echo=FALSE, include=FALSE, message=FALSE}
+```{r deps-ww2, echo=FALSE, include=FALSE, message=FALSE}
 mirrorUrl = "http://cran.ma.imperial.ac.uk"
 
 # Install and load all packages up-front!
@@ -49,7 +49,7 @@ https://drive.google.com/drive/folders/0B-1zDxRmAKmjdFYxcEVFaFZZcE0
 
 As with Question 1, the data needs to be loaded, paritioned, then scaled. Assuming that this has all been done as before - there's no need to demonstrate the exact same execution of code - we can simply demonstrate we have our data ready to work with.
 
-```{r, echo=FALSE, include=FALSE, message=FALSE}
+```{r prep-data-ww2, echo=FALSE, include=FALSE, message=FALSE}
 #going to import the Excel spreadsheet WhiteWine dataset
 wine.raw <- read_excel("../data/Whitewine.xlsx")
 
@@ -77,7 +77,7 @@ wine.scaled <- as.data.frame(scale(wine.all_but_q))
 In carrying out the experiments with creating the 3 clusters and then comparing them, I experienced an issue with the R runtime due to the sheer size of the dataset and how was transformed into complexity of the hierarchical clusters; the console reported a `nost stack overflow` and after some research online the only option was to use a smaller dataset. In the previous code block you can see the `sample` sunction used to reduce the dasaset to be studied to approximately two-thirds of the original size. Unfortunately, this may well have an adverse impact on results but there's not much I can do about that apart from maybe run the clustering again (multiple times) but with a fresh sample of the same size and then see if there's much variation.
 
 That issue aside, what follows is the summary of the sampled & scaled data.
-```{r}
+```{r show-sampled-scaled-wine-ww2}
 summary(wine.scaled)
 ```
 
@@ -85,14 +85,14 @@ summary(wine.scaled)
 
 Hierarchical clustering methods use a distance matrix as input for the algorithms; to that end, we need to transofrm the scaled date into a distance matrix before we pass it into our hierarchical clustering function.
 
-```{r}
+```{r distance-matrix-ww2}
 wine.dist_matrix_euclidean <- dist(wine.scaled) # Euclidean distance matrix.
 summary(wine.dist_matrix_euclidean)
 ```
 
 Now we can start clustering data using the hclust library. As per the requirements of this question we are calling hclust 3 times, to evaluate the "single", "complete" and "average" methods for heirarchical clustering. Assuming this hierarchcal clustering is meant to try and find relationships between the quantitative Wine properties and Wine quality, and knowing from the previous question that there are only 7 unique values for quality across the entire dataset, the next step is to cut out cluster trees to only have 7 branches.
 
-```{r}
+```{r dendrograms-1-ww2}
 wine.hclust_single <- hclust(wine.dist_matrix_euclidean, method = "single")
 wine.hclust_complete <- hclust(wine.dist_matrix_euclidean, method = "complete")
 wine.hclust_average <- hclust(wine.dist_matrix_euclidean, method = "average")
@@ -120,7 +120,7 @@ table(wine.hclust_average_g7)
 My observation from the cut trees is that unless the data is especially skewed, it seems like using the Complete method is the one method of the three tried that might have any hope of clustering in a way that could correlate, albeit weakly, with Quality. Having said that, this is not the main task of this question, which is to compare the dendrograms against one another to see how similar they are; To do this we convert the lcuster models to the dendrogram data type before using `cor.dendlist` to cross-compare the trees.
 
 
-```{r}
+```{r interpret-data-ww2}
 d_list <- dendlist(
   "Single" = wine.hclust_single %>% as.dendrogram,
   "Complete" = wine.hclust_complete %>% as.dendrogram,
@@ -132,7 +132,7 @@ cophentic_coefficient <- cor.dendlist(d_list, "cophenetic")
 
 Below is a matrix where the dendrograms are compared on a scale of 0 to 1 where 1 is 100% parity; below that is a digram expressing the same data but using bpie charts to convey the information. By the share of the pies, we can see that the "single" (1) and "average" (3) methods deliver trees that are more similar to eachother than they are to "complete".
 
-```{r}
+```{r display-interpretation-ww2}
 # Print correlation matrix
 round(cophentic_coefficient, 2)
 
@@ -142,7 +142,7 @@ corrplot(cophentic_coefficient, "pie", "lower")
 
 While we can see from coorplot, of even the corresponding table that the "Single" and "Average" dendrograms are 74% alike, this doesn't mean they are better! We can run the hierarchical clustering through a confusion matrix as we did with k-means and find that the results do not give us any meaningdul relationship to Wine Quality. In fact all clustering methods used have ended with a massive bias towards one single cluster for which most nodes belong, across all qualities of wine!
 
-```{r}
+```{r confuse-table-1-ww2}
 hclust_single_g7_table <- table(wine.q, wine.hclust_single_g7)
 names(dimnames(hclust_single_g7_table)) <- list("Quality", "Clusters")
 hclust_single_g7_table
@@ -163,7 +163,7 @@ randIndex(hclust_average_g7_table)
 
 Just in case outliers have skewed the outcomes I'm going to run all cluster calls with data that has had outliers removed, using the bxoplot method.
 
-```{r}
+```{r cleanse-bp-all-ww2}
 wine.scaled_cleansed_bp_all <- wine.scaled
 
 wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleansed_bp_all$density %in% boxplot(wine.scaled_cleansed_bp_all$density, plot=FALSE)$out), ]
@@ -184,7 +184,7 @@ summary(wine_cleansed.dist_matrix_euclidean)
 
 Now we can start clustering data using the hclust library. As per the requirements of this question we are calling hclust 3 times, to evaluate the "single", "complete" and "average" methods for heirarchical clustering. Assuming this hierarchcal clustering is meant to try and find relationships between the quantitative Wine properties and Wine quality, and knowing from the previous question that there are only 7 unique values for quality across the entire dataset, the next step is to cut out cluster trees to only have 7 branches.
 
-```{r}
+```{r dendrograms-2-ww2}
 wine_cleansed.hclust_single <- hclust(wine_cleansed.dist_matrix_euclidean, method = "single")
 wine_cleansed.hclust_complete <- hclust(wine_cleansed.dist_matrix_euclidean, method = "complete")
 wine_cleansed.hclust_average <- hclust(wine_cleansed.dist_matrix_euclidean, method = "average")
@@ -209,7 +209,7 @@ table(wine_cleansed.hclust_average_g7)
 
 Interestingly, it's already apparent from the dendrograms that the "single" and "average" trees are less similar with this set of data, and the "average" is now somewhere inbetween the "single" and "complete" while the "single" outcome remains largely unchanged. As such, I think it merits the expense of ploting the diamgrams to visually display the statistical comparison.
 
-```{r}
+```{r interpret-data-2-ww2}
 cleansed_d_list <- dendlist(
   "Single" = wine_cleansed.hclust_single %>% as.dendrogram,
   "Complete" = wine_cleansed.hclust_complete %>% as.dendrogram,
@@ -218,7 +218,7 @@ cleansed_d_list <- dendlist(
 
 cleansed_cophentic_coefficient <- cor.dendlist(cleansed_d_list, "cophenetic")
 ```
-```{r}
+```{r display-interpretation-2-ww2}
 # Print correlation matrix
 round(cleansed_cophentic_coefficient, 2)
 
@@ -229,7 +229,7 @@ corrplot(cleansed_cophentic_coefficient, "pie", "lower")
 
 The results above suggest that removing outlies makes a massive difference to how these methods operate; this must be considered in particular with my choice os keeping with the Euclisean type of distance matrix.
 
-```{r}
+```{r confuse-table-3-ww2}
 wine_cleansed.hclust_complete_g7_table <- table(wine.q, wine_cleansed.hclust_complete_g7)
 names(dimnames(wine_cleansed.hclust_complete_g7_table)) <- list("Quality", "Clusters")
 wine_cleansed.hclust_complete_g7_table
