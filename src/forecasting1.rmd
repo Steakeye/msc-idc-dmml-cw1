@@ -1,0 +1,79 @@
+---
+title: "WhiteWine2"
+output: html_document
+---
+
+
+```{r setup-f1, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r deps-f1, echo=FALSE, include=FALSE, message=FALSE}
+mirrorUrl = "http://cran.ma.imperial.ac.uk"
+
+# Install and load all packages up-front!
+if(!require(readxl)) install.packages("readxl", repos = mirrorUrl)
+if(!require(corrplot)) install.packages("corrplot", repos = mirrorUrl)
+if(!require(flexclust)) install.packages("flexclust", repos = mirrorUrl, dependencies = TRUE)
+#
+library("readxl")
+library("dendextend")
+library("corrplot")
+library("flexclust")
+
+set.seed(1234)
+```
+
+<section>
+
+#Question 2: White Wine clustering (Hierarchical)
+
+##Premise
+
+>You need to construct an MLP neural network for this problem. You need to consider the appropriate input vector, as well as the internal network structure (hidden layers, nodes, learning rate). You may consider any de-trending scheme if you feel is necessary. Write a code in R Studio to address all these requirements. You need to show the performance of your network both graphically as well as in terms of usual statistical indices (MSE, RMSE and MAPE). Hint: Experiment with various network structures and show a comparison table of their performances. This will be a good justification for your final network choice. Show all your working steps. As everyone will have different forecasting result, emphasis in the marking scheme will be given to the adopted methodology and the explanation/justification of various decisions you have taken in order to provide an acceptable, in terms of performance, solution. The input selection problem is very important. Experiment with various options (i.e. how many past values you need to consider as potential network inputs).
+
+<!--
+3rd Objective (MLP)
+• Discuss the input selection problem and propose various input configurations 10
+• Design a number of MLPs, using various structures (layers/nodes) / input parameters and show in a table their performances comparison based on provided stat. indices 15
+• Provide your best results both graphically (your prediction output vs. desired output) and via performance indices 5
+
+resources:
+-->
+
+##Preparation of data
+
+As with Question 1, the data needs to be loaded, paritioned, then scaled. Assuming that this has all been done as before - there's no need to demonstrate the exact same execution of code - we can simply demonstrate we have our data ready to work with.
+
+```{r prep-data-f1, echo=FALSE, include=FALSE, message=FALSE}
+#going to import the Excel spreadsheet WhiteWine dataset
+wine.raw <- read_excel("../data/Whitewine.xlsx")
+
+#Sample the wine..? Due to a node stack overflow when conducting cor.dendlist I've had to use a subset of the data
+samp <- sample(nrow(wine.raw), 0.66 * nrow(wine.raw))
+wine.sampled <- wine.raw[samp, ]
+
+#Separating wine data from quality column
+wine.all_but_q <- wine.sampled[1:11]
+#wine.all_but_q <- wine.raw[1:11]
+wine.q <- wine.sampled$quality
+#wine.q <- wine.raw$quality
+
+#Wine properties
+str(wine.all_but_q)
+
+#Wine quality values
+str(wine.q)
+
+#Now we scale the data
+wine.scaled <- as.data.frame(scale(wine.all_but_q))
+```
+
+
+## Conclusion
+
+...
+
+
+</section>
