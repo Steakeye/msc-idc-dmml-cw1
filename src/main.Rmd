@@ -30,11 +30,16 @@ abstract: Show evidence of understanding of the clustering and modelling concept
   of their results.
 toc-depth: 2
 toc-title: Table of Contents
+bibliography: bibliography.ris
+csl: ../build/harvard-university-of-westminster.csl
 ---
 
 ```{r WhiteWine, child = 'WhiteWine.rmd'}
 ```
 
 ```{r WhiteWine, child = 'WhiteWine2.rmd'}
+```
+
+```{r WhiteWine, child = 'forecasting1.rmd'}
 ```
 
