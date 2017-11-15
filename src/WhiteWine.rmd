@@ -4,12 +4,12 @@ output: html_document
 ---
 
 
-```{r setup, include=FALSE, message=FALSE}
+```{r setup-ww1, include=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r, echo=FALSE, include=FALSE, message=FALSE}
+```{r deps-ww1, echo=FALSE, include=FALSE, message=FALSE}
 mirrorUrl = "http://cran.ma.imperial.ac.uk"
 
 # Install and load all packages up-front!
@@ -45,21 +45,21 @@ Check for any pre-processing tasks 5
 
 Firstly we need to load the data...
 
-```{r}
+```{r read-excel-ww1}
 #going to import the Excel spreadsheet WhiteWine dataset
 wine.raw <- read_excel("../data/Whitewine.xlsx")
 ```
 
 Here's a glance at the dataset
 
-```{r}
+```{r show-wine-ww1}
 head(wine.raw)
 str(wine.raw)
 ```
 
 We want to scale the data to allow all attributes to be compared more easily. First of all let's split our data so we have two tables, one with all the attributes of wine and the other just with the humanly perceived quality. 
 
-```{r}
+```{r partition-wine-ww1}
 wine.all_but_q <- wine.raw[1:11]
 wine.q <- wine.raw$quality
 
@@ -71,14 +71,14 @@ str(wine.q)
 ```
 
 Now we scale the data
-```{r}
+```{r scale-wine-ww1}
 wine.scaled <- as.data.frame(scale(wine.all_but_q))
 
 #Summary of scaled wine data
 summary(wine.scaled)
 ```
 
-```{r}
+```{r boxplot-wine-ww1}
 boxplot(wine.scaled, main="Looking at the data graphically", xlab="Wine Attributes", ylab="Scaled values") 
 ```
 
@@ -90,7 +90,7 @@ https://www.researchgate.net/post/Should_outliers_be_removed_before_or_after_dat
 
 Below are density line graphs to demonstrate the difference between attributes that don't seem to have outliers compared to those that do.
 
-```{r}
+```{r plot-density-ww1}
 plot(density(wine.scaled$`alcohol`))
 plot(density(wine.scaled$`chlorides`))
 plot(density(wine.scaled$`free sulfur dioxide`))
@@ -99,7 +99,7 @@ plot(density(wine.scaled$`density`))
 
 In order to work out which attributes should be considered to have valid outliers, I've gone with a heuristic approach, choosing to look at the distance between the uppermost outliers for each attribute and it's nearest neighbour.
 
-```{r}
+```{r find-sparse-tails-ww1}
 #Create a list to populate with our tail neighbour distances
 tail_deltas <- c()
 
@@ -135,7 +135,7 @@ To clarify, the attributes to be processed are:
 
 Boxplot has an outlier property that we can use to collect values that we might want to remove, so this is the one option we will look at for cleansing data.
 
-```{r}
+```{r tail-cleanse-ww1}
 wine.scaled_cleansed_bp <- wine.scaled[ !(wine.scaled$density %in% boxplot(wine.scaled$density, plot=FALSE)$out), ]
 wine.scaled_cleansed_bp <- wine.scaled_cleansed_bp[ !(wine.scaled_cleansed_bp$`free sulfur dioxide` %in% boxplot(wine.scaled$`free sulfur dioxide`, plot=FALSE)$out), ]
 wine.scaled_cleansed_bp <- wine.scaled_cleansed_bp[ !(wine.scaled_cleansed_bp$`residual sugar` %in% boxplot(wine.scaled_cleansed_bp$`residual sugar`, plot=FALSE)$out), ]
@@ -148,7 +148,7 @@ boxplot(wine.scaled_cleansed_bp, main="Looking at the cleansed data graphically"
 
 While this new set of data is now has no values beyond the outermost quartile ranges, this is arguably too harsh a treatment. An alternative option is to arbitrarily work with the interquartile ranges; what  have done is to tweak the multiplier of the interquartile range until it successfully meant that only the most extreme outliers were discard. In the end a value 5 times that of the IQR worked well to pick off only values at the very tips of the tails.
 
-```{r, message=FALSE}
+```{r cleanse-sparse-tails-ww1, message=FALSE}
 
 #Get the top 5 variables with the highest outlier distance
 worst_outliers <- head(sorted_attributes_by_neighbour_d$attributes, n=5)
@@ -188,19 +188,19 @@ boxplot(wine.scaled_cleansed_iqr, main="Looking at the IQR cleansed data graphic
 
 Now that the data looks a lot cleaner, it's time to start working with the data to try and find the best clustering. To begin with, nbclust will be used to see if that produces anything useful.
 
-```{r}
+```{r num-of-clusters-iqr-ww1}
 number_of_clusters <- NbClust(wine.scaled_cleansed_iqr,
                 min.nc=2, max.nc=15,
                 method="kmeans")
 ```
 
 The following table displays the results recommending potential values for k
-```{r}
+```{r table-num-clusters-iqr-ww1}
 table(number_of_clusters$Best.n[1,])
 ```
 
 The bar chart more easily conveys this.
-```{r}
+```{r bar-num-clusters-iqr-ww1}
 barplot(table(number_of_clusters$Best.n[1,]), 
        xlab="Number of Clusters",
        ylab="Number of Criteria",
@@ -209,7 +209,7 @@ barplot(table(number_of_clusters$Best.n[1,]),
 
 From the bar graph above we can see that there seems to be an clear leader in terms of suggested number of clusters, being k = 2. There are however other values that should be explored to see how they compare: 3, 5 and 14. To confirm that the accuracy of this result in terms of the best contender for, we can plot the sum of square errors and looks for a pronounced bend in the graph. Where the most pronounced bend is, this is a contender for the value for k.
 
-```{r}
+```{r sum-square-err-ww1}
 sse_list <- 0
 for (i in 1:15){
  sse_list[i] <- sum(kmeans(wine.scaled_cleansed_iqr, centers=i)$withinss)
@@ -224,7 +224,7 @@ plot(1:15,
 
 The histogram for the Sum of Square Errors partially backs up the results of nbclust seeing as there is 'elbow' on the line at 2 on the Number of Clusters. Having said that, the kink between 5 and 7 suggest that this range should also be tested for k. 
 
-```{r}
+```{r fit-data-ww1}
 
 #If we're going to run tests on the k-means against the data we need to remove the outliers from our quality column too
 wine.q_cleansed <- wine.q[-iqr_outliers]
@@ -257,7 +257,7 @@ To comapre the clusters to the quality scores we use a Confusion matrix to see w
 
 >The Rand index computes how similar the clusters (returned by the clustering algorithm) are to the benchmark classifications. One can also view the Rand index as a measure of the percentage of correct decisions made by the algorithm. It can be computed using the following formula RI={\frac {TP+TN}{TP+FP+FN+TN}}
 
-```{r}
+```{r bar-cleansed-wine-ww1}
 wine.q_table <- table(wine.q_cleansed)
 wine.q_table
 barplot(wine.q_table,
@@ -265,7 +265,7 @@ barplot(wine.q_table,
        ylab="Frequency",
        main="Distribution of wines across quality values")
 ```
-```{r}
+```{r confuse-table-1-ww1}
 confuseTable.km7 <- table(wine.q_cleansed, fit.km7$cluster)
 
 names(dimnames(confuseTable.km7)) <- list("Quality", "Clusters")
@@ -280,7 +280,7 @@ Given this low value of 0.03410079, is so far from the ideal, and as can be seen
 
 In order to be sure that it is indeed the methodology that is unsuitable rather than the data being insufficiently processed, looking at a more severe form of data cleansing may prove insightful; to that end, removing all boxplot outliers across all variables and running the whole process again is worth it just to see if the results are more conclusive.
 
-```{r}
+```{r bp-all-cleanse-ww1}
 wine.properties <- names(wine.all_but_q)
 # 
 wine.scaled_cleansed_bp_all <- wine.scaled
@@ -304,7 +304,7 @@ wine.scaled_cleansed_bp_all <- wine.scaled_cleansed_bp_all[ !(wine.scaled_cleans
 boxplot(wine.scaled_cleansed_bp_all, main="Boxplot all outliers cleansed", xlab="Wine Attributes", ylab="Scaled values")
 ```
 
-```{r NbClust}
+```{r bp-all-num-clusters-ww1}
 number_of_clusters_severe_cleanse <- NbClust(wine.scaled_cleansed_bp_all,
                 min.nc=2, max.nc=15,
                 method="kmeans")
@@ -312,19 +312,19 @@ number_of_clusters_severe_cleanse <- NbClust(wine.scaled_cleansed_bp_all,
 
 
 The following table displays the results recommending potential values for k
-```{r}
+```{r table-num-clisters-bp-all-ww1}
 table(number_of_clusters_severe_cleanse$Best.n[1,])
 ```
 
 The bar chart more easily conveys this.
-```{r}
+```{r bar-num-clisters-bp-all-ww1}
 barplot(table(number_of_clusters_severe_cleanse$Best.n[1,]), 
        xlab="Number of Clusters",
        ylab="Number of Criteria",
        main="Number of Clusters Chosen by 30 Criteria")
 ```
 
-```{r}
+```{r sum-square-err-bp-all-ww1}
 sse_list <- 0
 for (i in 1:15){
  sse_list[i] <- sum(kmeans(wine.scaled_cleansed_bp_all, centers=i)$withinss)
@@ -337,12 +337,12 @@ plot(1:15,
  ylab="Within groups sum of squares")
 ```
 
-```{r}
+```{r fit-data-bp-all-ww1}
 
 #If we're going to run tests on the k-means against the severely cleansed data we need to remove the outliers from our quality column too
-bp_server_outliers <- unique(unlist(mapply(function(x, y) sapply(setdiff(x, y), function(d) which(x==d)), wine.scaled, wine.scaled_cleansed_bp_all)))
+bp_severe_outliers <- unique(unlist(mapply(function(x, y) sapply(setdiff(x, y), function(d) which(x==d)), wine.scaled, wine.scaled_cleansed_bp_all)))
 
-wine.q_cleansed_severe <- wine.q[-bp_server_outliers]
+wine.q_cleansed_severe <- wine.q[-bp_severe_outliers]
 
 fit_severe.km2 <- kmeans(wine.scaled_cleansed_bp_all, 2)
 fit_severe.km3 <- kmeans(wine.scaled_cleansed_bp_all, 3)
@@ -363,7 +363,7 @@ plotcluster(wine.scaled_cleansed_bp_all, fit_severe.km11$cluster)
 plotcluster(wine.scaled_cleansed_bp_all, fit_severe.km14$cluster)
 ```
 
-```{r}
+```{r confuse-table-bp-all-ww1}
 confuseTable_severe.km7 <- table(wine.q_cleansed_severe, fit_severe.km7$cluster)
 
 names(dimnames(confuseTable_severe.km7)) <- list("Quality", "Clusters")
@@ -381,7 +381,7 @@ Given that the poor value of 0.03410079 for the dataset that was only lightly 'p
 
 It would appear that the less intensive data cleansing was more appropriate if the ARI value is anything to go by. To refresh what the confusion matrix for that looked like, it is repeated below:
 
-```{r}
+```{r confuse-table-1-repeat-ww1}
 
 confuseTable.km7
 
@@ -392,7 +392,7 @@ If we look at this more closely, we can see that while there are wines of variou
 
 ## Creating 3 quality factors & attempting one last fit.
 
-```{r}
+```{r confuse-table-3-factors-ww1}
 wine.q_cleansed_f3 <- cut(wine.q_cleansed, 3, labels = c("bad", "mediocre", "good"))
 
 confuseTable.km3 <- table(wine.q_cleansed, fit.km3$cluster)
@@ -412,7 +412,7 @@ The results of these other attempts to fit the data against 3 clusters has not y
 
 ### Fitting to NbClust suggested k = 2
 
-```{r}
+```{r confuse-table-2-factors-ww1}
 wine.q_cleansed_f2 <- cut(wine.q_cleansed, 2, labels = c("bad", "good"))
 
 confuseTable.km2 <- table(wine.q_cleansed, fit.km2$cluster)
@@ -432,7 +432,7 @@ randIndex(confuseTable.km2_f2)
 
 According to the ARI values the highest being 0.03450436, for 3 clusters with 7 unique quality values, this would be the most successful k-means clustering of those explored, though only marginally. So before we reach out conclusion it's necessary to display the characteristics of this particular set of clusters for k = 3.
 
-```{r}
+```{r best-results-ww1}
 #fit.km3
 
 #K-means clustering with 3 clusters of sizes:
