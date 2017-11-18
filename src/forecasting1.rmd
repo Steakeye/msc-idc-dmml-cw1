@@ -137,14 +137,22 @@ plot(mlp.nn1)
 
 ###Testing the netwotk
 
-Before we can test the neural network against test data we need to transform the test data we took from the origina dataset and transform it so we can pass in three input variables like when the network was trained.
+Before we can test the neural network against test data we need to transform the test data we took from the original dataset and transform it so we can pass in three input variables similarly to how the network was trained.
 
 ```{r prep-test-mlp-f1}
 staggered_test_data_frame <- vector_to_time_series_data(exchange.scaled_test$`USD/EUR`, 3)
 ```
 
+Noew that the test data is arranged in the same way that the training data is, the neural network can be tested.
+
 ```{r testing-mlp-f1}
-mlp.nn1_results <- compute(mlp.nn1, testdata)
+mlp.nn1_results <- compute(mlp.nn1, staggered_test_data_frame)
+
+test_expected_data <- tail(exchange.scaled_test$`USD/EUR`, -3)
+
+ls(mlp.nn1_results)
+
+print(mlp.nn1_results$net.result)
 ```
 
 
