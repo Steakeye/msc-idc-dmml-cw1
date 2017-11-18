@@ -121,9 +121,6 @@ head(staggered_data_matrix)
 Now we have the data in a format such that we can provide 3 consecutive days as input and the following day as desired output, we are ready to train the neural network.
 
 ```{r train-mlp-f1}
-#derivatives of the error function as stopping criteria.
-#net.sqrt &lt;- neuralnet(Output~Input,trainingdata, hidden=10, threshold=0.01)
-#print(net.sqrt)
 mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
 
 mlp.nn1 <- neuralnet(mlp.form1, staggered_data_matrix, hidden = c(8,4,2), threshold=0.01)
@@ -137,7 +134,7 @@ plot(mlp.nn1)
 
 ###Testing the netwotk
 
-Before we can test the neural network against test data we need to transform the test data we took from the original dataset and transform it so we can pass in three input variables similarly to how the network was trained.
+Before we can test the neural network against test data we need to transform the test data we took from the original dataset and transform it so we can pass in three input variables similarly to how the network was trained. Picking the number of inputs and what those inputs might be is part of the challenge of creating a neural network for time-series data; it's pretty obvious that one input value will hardly help project a future value but what value to pick isn't clear. The lower the number or inputs the greater likelihood of error but the higher the number of inputs, the increased cimplexity and longer training period.  I've picked 3 consecutive days to sart with but will experiment with other configuations afterwards.
 
 ```{r prep-test-mlp-f1}
 staggered_test_data_frame <- vector_to_time_series_data(exchange.scaled_test$`USD/EUR`, 3)
@@ -148,14 +145,11 @@ Now that the test data is arranged in the same way that the training data is, th
 ```{r testing-mlp-f1}
 mlp.nn1_results <- compute(mlp.nn1, staggered_test_data_frame)
 
-test_expected_data <- tail(exchange.scaled_test$`USD/EUR`, -3)
+test_expected_data.nn1 <- tail(exchange.scaled_test$`USD/EUR`, -3)
 
-#ls(mlp.nn1_results)
-
-#print(mlp.nn1_results$net.result)
-test_v_expected <- cbind(test_expected_data, as.data.frame(head(mlp.nn1_results$net.result, -1)))
-colnames(test_v_expected) <- c("Expected Output", "Neural Net Output")
-print(test_v_expected)
+test_v_expected.nn1 <- cbind(test_expected_data.nn1, as.data.frame(head(mlp.nn1_results$net.result, -1)))
+colnames(test_v_expected.nn1) <- c("Expected Output", "Neural Net Output")
+print(test_v_expected.nn1)
 ```
 
 And then the Sum of Square Errors, and Mean Squared Error values can be derived in order to look at the performance of the trained nural network against test data.
@@ -172,11 +166,41 @@ mse_func <- function (x) {
 }
 ```
 ```{r run-indicator-funcs1-mlp-f1}
-test_delta <- output_delta_func(test_v_expected$`Expected Output`, test_v_expected$`Neural Net Output`)
+test_delta.nn1 <- output_delta_func(test_expected_data.nn1$`Expected Output`, test_expected_data.nn1$`Neural Net Output`)
 #SSE of this first nn
-sse_func(test_delta)
+sse_func(test_delta.nn1)
 #MSE of this first nn
-mse_func(test_delta)
+mse_func(test_delta.nn1)
+```
+
+//TODO: Get formulas for other indicators
+- RMSE
+- MAPE
+
+## Experimenting with other Neural Netowrk configucations
+
+The first configuration to experiment with in the `neuralnet` package should be the `linear.output` value which is true by default. It occurs to me that currency rates don't change in a linear fashion so we should create a neural network that reflects this.
+
+```{r train-mlp-nonl-f1}
+#mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
+
+mlp.nn1_nonl <- neuralnet(mlp.form1, staggered_data_matrix, hidden = c(8,4,2), threshold=0.01, linear.output=FALSE)
+```
+```{r testing-mlp-nonl-f1}
+mlp.nn1_nonl_results <- compute(mlp.nn1_nonl, staggered_test_data_frame)
+
+test_expected_data.nn1_nonl <- tail(exchange.scaled_test$`USD/EUR`, -3)
+
+test_v_expected.nn1_nonl <- cbind(test_expected_data, as.data.frame(head(mlp.nn1_results$net.result, -1)))
+colnames(test_v_expected.nn1_nonl) <- c("Expected Output", "Neural Net Output")
+print(test_v_expected.nn1_nonl)
+```
+```{r run-indicator-funcs1-mlp-nonl-f1}
+test_delta.nn1_nonl <- output_delta_func(test_v_expected.nn1_nonl$`Expected Output`, test_v_expected.nn1_nonl$`Neural Net Output`)
+#SSE of this first nn
+sse_func(test_delta.nn1_nonl)
+#MSE of this first nn
+mse_func(test_delta.nn1_nonl)
 ```
 
 ## Conclusion
