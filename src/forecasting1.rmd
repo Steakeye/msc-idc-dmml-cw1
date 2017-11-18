@@ -82,20 +82,33 @@ summary(exchange.scaled_test)
 
 Because we're looking to train the neural network on time-series data, we have to transform the data to make it easy to pass in time based input, which means we need to provide more than 1 input value at a time to train against the desired output; to that end, below is a code chunk that takes the exchange rate values and creates rows where the last entry is the desired output, the third is considered day 0 and the 1st to entries are 2 previous days from day 0.
 
-```{r matrix-exchange-f1}
+Before the data is ready, a function can be created in order to re-use the functionality over and over; this way the same code can be applied to generating out test data as the training data.
 
-row_count <- nrow(exchange.scaled_train)
+```{r matrix-func-f1}
+vector_to_time_series_data <- function(vec, colCount) {
+  row_count <- length(vec)
+  
+  staggered_data_matrix <- matrix(vec, row_count, colCount)
+  
+  for (i in 1:row_count){
+    new_row <- c(staggered_data_matrix[i])
+    
+    for (j in 1:(colCount-1)){
+      new_row <- c(new_row, staggered_data_matrix[i + j])
+    }
+    
+    staggered_data_matrix[i,] <- new_row
+  }
 
-staggered_data_matrix <- matrix(exchange.scaled_train$`USD/EUR`, row_count, 4)
-
-train_data_length <- length(staggered_data_matrix)
-for (i in 1:row_count){
-  staggered_data_matrix[i,] <-c(staggered_data_matrix[i], staggered_data_matrix[i+1], staggered_data_matrix[i+2], staggered_data_matrix[i+3])
+  return (as.data.frame(head(staggered_data_matrix, row_count - (colCount -1))))
 }
+```
 
-staggered_data_matrix <- as.data.frame(head(staggered_data_matrix, row_count - 3))
+With this function we can transform the training currency values now: 
+```{r matrix-exchange-f1}
+staggered_data_frame <- vector_to_time_series_data(exchange.scaled_train$`USD/EUR`, 4)
 
-colnames(staggered_data_matrix) <- c("Input_dneg2", "Input_dneg1", "Input_d0", "Output")
+colnames(staggered_data_frame) <- c("Input_dneg2", "Input_dneg1", "Input_d0", "Output")
 
 #Summary of training data
 head(staggered_data_matrix)
@@ -116,13 +129,24 @@ mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
 mlp.nn1 <- neuralnet(mlp.form1, staggered_data_matrix, hidden = c(8,4,2), threshold=0.01)
 ```
 
-Now the neural network has been trained we can obsever a representation of its structure.
+Now the neural network has been trained we can view a representation of its structure.
 
 ```{r display-mlp-f1}
 plot(mlp.nn1)
 ```
 
-###Training the netwotk
+###Testing the netwotk
+
+Before we can test the neural network against test data we need to transform the test data we took from the origina dataset and transform it so we can pass in three input variables like when the network was trained.
+
+```{r prep-test-mlp-f1}
+staggered_test_data_frame <- vector_to_time_series_data(exchange.scaled_test$`USD/EUR`, 3)
+```
+
+```{r testing-mlp-f1}
+mlp.nn1_results <- compute(mlp.nn1, testdata)
+```
+
 
 ## Conclusion
 
