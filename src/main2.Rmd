@@ -34,12 +34,6 @@ bibliography: bibliography.ris
 csl: ../build/harvard-university-of-westminster.csl
 ---
 
-```{r WhiteWine, child = 'WhiteWine.rmd'}
-```
-
-```{r WhiteWine2, child = 'WhiteWine2.rmd'}
-```
-
 ```{r forecasting1, child = 'forecasting1.rmd'}
 ```
 
