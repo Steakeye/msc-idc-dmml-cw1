@@ -143,18 +143,41 @@ Before we can test the neural network against test data we need to transform the
 staggered_test_data_frame <- vector_to_time_series_data(exchange.scaled_test$`USD/EUR`, 3)
 ```
 
-Noew that the test data is arranged in the same way that the training data is, the neural network can be tested.
+Now that the test data is arranged in the same way that the training data is, the neural network can be tested.
 
 ```{r testing-mlp-f1}
 mlp.nn1_results <- compute(mlp.nn1, staggered_test_data_frame)
 
 test_expected_data <- tail(exchange.scaled_test$`USD/EUR`, -3)
 
-ls(mlp.nn1_results)
+#ls(mlp.nn1_results)
 
-print(mlp.nn1_results$net.result)
+#print(mlp.nn1_results$net.result)
+test_v_expected <- cbind(test_expected_data, as.data.frame(head(mlp.nn1_results$net.result, -1)))
+colnames(test_v_expected) <- c("Expected Output", "Neural Net Output")
+print(test_v_expected)
 ```
 
+And then the Sum of Square Errors, and Mean Squared Error values can be derived in order to look at the performance of the trained nural network against test data.
+
+```{r indicator-funcs1-mlp-f1}
+output_delta_func <- function (expected, actual) {
+  return (c(expected-actual)) 
+}
+sse_func <- function(x) {
+   return (sum( (x - mean(x) )^2 ))
+}
+mse_func <- function (x) {
+  return(sse_func(x)/length(x))
+}
+```
+```{r run-indicator-funcs1-mlp-f1}
+test_delta <- output_delta_func(test_v_expected$`Expected Output`, test_v_expected$`Neural Net Output`)
+#SSE of this first nn
+sse_func(test_delta)
+#MSE of this first nn
+mse_func(test_delta)
+```
 
 ## Conclusion
 
