@@ -56,7 +56,7 @@ str(exchange.raw)
 ```
 
 We want to scale the data to allow  for faster training. 
-Now we scale the data
+
 ```{r scale-exchange-f1}
 exchange.scaled <- exchange.raw
 
@@ -67,7 +67,8 @@ summary(exchange.scaled)
 ```
 
 And partition the data into a set for training and another for testing the neural network after.
-```{r subest-exchange-f1}
+
+```{r subset-exchange-f1}
 exchange.scaled_train <- head(exchange.scaled, 320)
 exchange.scaled_test <- tail(exchange.scaled, -320) #exchange.scaled[-1:-320, 1:3] #also works!
 
@@ -77,8 +78,11 @@ summary(exchange.scaled_train)
 summary(exchange.scaled_test)
 ```
 
-Setting up the training data
-```{r train-matrix-exchange-f1}
+###Setting up the training data
+
+Because we're looking to train the neural network on time-series data, we have to transform the data to make it easy to pass in time based input, which means we need to provide more than 1 input value at a time to train against the desired output; to that end, below is a code chunk that takes the exchange rate values and creates rows where the last entry is the desired output, the third is considered day 0 and the 1st to entries are 2 previous days from day 0.
+
+```{r matrix-exchange-f1}
 
 row_count <- nrow(exchange.scaled_train)
 
@@ -91,11 +95,34 @@ for (i in 1:row_count){
 
 staggered_data_matrix <- as.data.frame(head(staggered_data_matrix, row_count - 3))
 
-colnames(staggered_data_matrix) <- c("Input_d-2", "Input_d-1", "Input_d0", "Output")
+colnames(staggered_data_matrix) <- c("Input_dneg2", "Input_dneg1", "Input_d0", "Output")
 
 #Summary of training data
 head(staggered_data_matrix)
 ```
+
+##Creating & using the neural net
+
+###Training the netwotk
+
+Now we have the data in a format such that we can provide 3 consecutive days as input and the following day as desired output, we are ready to train the neural network.
+
+```{r train-mlp-f1}
+#derivatives of the error function as stopping criteria.
+#net.sqrt &lt;- neuralnet(Output~Input,trainingdata, hidden=10, threshold=0.01)
+#print(net.sqrt)
+mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
+
+mlp.nn1 <- neuralnet(mlp.form1, staggered_data_matrix, hidden = c(8,4,2), threshold=0.01)
+```
+
+Now the neural network has been trained we can obsever a representation of its structure.
+
+```{r display-mlp-f1}
+plot(mlp.nn1)
+```
+
+###Training the netwotk
 
 ## Conclusion
 
