@@ -15,9 +15,13 @@ mirrorUrl = "http://cran.ma.imperial.ac.uk"
 # Install and load all packages up-front!
 if(!require(readxl)) install.packages("readxl", repos = mirrorUrl)
 if(!require(neuralnet)) install.packages("neuralnet", repos = mirrorUrl)
+if(!require(Metrics)) install.packages("Metrics", repos = mirrorUrl)
+if(!require(scales)) install.packages("scales", repos = mirrorUrl)
 #
 library("readxl")
 library("neuralnet")
+library("Metrics")
+library("scales")
 
 set.seed(1234)
 ```
@@ -152,7 +156,15 @@ colnames(test_v_expected.nn1) <- c("Expected Output", "Neural Net Output")
 print(test_v_expected.nn1)
 ```
 
-And then the Sum of Square Errors, and Mean Squared Error values can be derived in order to look at the performance of the trained nural network against test data.
+### Evaluating the predictions
+
+There are two ways we can look at the qualityof the performance of the neural netowrk:
+- Various single number values derived from the difference between the predicted and actual values
+- Visualising the data, for example, by plotting the estimates and actual values on the sme grapg to more easily draw comparisons by eye.
+
+#### Numeric indicators
+
+And then the Sum of Square Errors, and Mean Squared Error values can be derived in order to look at the performance of the trained nural network against test data. The closer to 0 the values are, the better.
 
 ```{r indicator-funcs1-mlp-f1}
 output_delta_func <- function (expected, actual) {
@@ -166,16 +178,65 @@ mse_func <- function (x) {
 }
 ```
 ```{r run-indicator-funcs1-mlp-f1}
-test_delta.nn1 <- output_delta_func(test_expected_data.nn1$`Expected Output`, test_expected_data.nn1$`Neural Net Output`)
+test_delta.nn1 <- output_delta_func(test_v_expected.nn1$`Expected Output`, test_v_expected.nn1$`Neural Net Output`)
 #SSE of this first nn
 sse_func(test_delta.nn1)
 #MSE of this first nn
 mse_func(test_delta.nn1)
 ```
 
-//TODO: Get formulas for other indicators
-- RMSE
-- MAPE
+Additionally we can look are the performance in terms of the Root Mean Square Error or the Mean Absolute Percentage Error. The Root Mean Square Error is the square root of the average of the squared errors, which allows for the greater individual errors to have a greater influence on the final error value. The Mean Absolute Percentage Error shows the error in terms of the the median of the errors as a fraction of the estimated value, which is displayed as a percentage; the biggest drawback to this measure is the risk of dividing by 0 is the estimated value is 0 but is doesn't allow the biggest deltas to influence the final value more than by their proportions.
+
+What follows are the RMSE and MAPE values for the neural net.
+
+```{r train-mlp-nonl-f1}
+#RMSE for the nn
+rmse(test_v_expected.nn1$`Neural Net Output`, test_v_expected.nn1$`Expected Output`)
+#MAPE for the nn
+percent(mape(test_v_expected.nn1$`Neural Net Output`, test_v_expected.nn1$`Expected Output`))
+```
+
+#### Visual evaluation
+
+That follows is a graph plotting neural net predicted values against actual values.
+
+
+```{r train-mlp-nonl-f1}
+# Create Line Chart
+
+# convert factor to numeric for convenience 
+#Orange$Tree <- as.numeric(Orange$Tree) 
+#ntrees <- max(Orange$Tree)
+count.col <- ncol(test_v_expected.nn1)
+count.row <- nrow(test_v_expected.nn1)
+exchange_range <- range(test_v_expected.nn1)
+
+# get the range for the x and y axis 
+plot_range.y <- range(test_v_expected.nn1)
+plot_range.x <- 1:nrow(test_v_expected.nn1)
+
+# set up the plot 
+plot(test_v_expected.nn1$`Expected Output`, type="n", xlab="Days",
+  	ylab="Normalised Exchange Rate", ylim=plot_range.y ) 
+
+colors <- rainbow(count.col) 
+linetype <- c(1:count.col) 
+plotchar <- seq(18,18+count.col,1)
+
+# add lines 
+for (i in 1:count.col) { 
+  #tree <- subset(Orange, Tree==i) 
+  lines(test_v_expected.nn1[i], type="b", lwd=1.5,
+    lty=linetype[i], col=colors[i], pch=plotchar[i]) 
+} 
+
+# add a title and subtitle 
+title("Exchange Rate Prediction Versus Actual", "Comparing actual values for USD/EUR rates against values derived from a Neural Network")
+
+# add a legend 
+#legend(test_v_expected.nn1[1], 1:count.col, cex=0.8, col=colors,
+#  	pch=plotchar, lty=linetype, title="Exchange Rates")
+```
 
 ## Experimenting with other Neural Netowrk configucations
 
