@@ -1,4 +1,4 @@
----
+﻿---
 title: "WhiteWine"
 output: html_document
 ---
@@ -253,7 +253,7 @@ plotcluster(wine.scaled_cleansed_iqr, fit.km14$cluster)
 
 Now that we have experimented with various different values for k, when applying k-means clustering to the wine data, it's now time to see if it can be fit to the data that delivers anything obviously meaningful with regards to wine quality. While the strongest cluster option appears to be 2, I thought it was worth looking at how to map the data against quality by looking at the quality values as though they were factors; so, as you can see in the following table, there are only 7 unique values out of 10 possible scores for quality, meaning that trying to fit the data is actually easiest against 7 clusters, one per quality value.
 
-To comapre the clusters to the quality scores we use a Confusion matrix to see where the values lie within those 2 sets of data. Further to that, to evaluate the confusion matrix mathematically, we will apply the Rand Index method, which Wikipedia (https://en.wikipedia.org/wiki/Cluster_analysis#External_evaluation) describes thusly:
+To compare the clusters to the quality scores we use a Confusion matrix to see where the values lie within those 2 sets of data. Further to that, to evaluate the confusion matrix mathematically, we will apply the Rand Index method, which Wikipedia (https://en.wikipedia.org/wiki/Cluster_analysis#External_evaluation) describes thusly:
 
 >The Rand index computes how similar the clusters (returned by the clustering algorithm) are to the benchmark classifications. One can also view the Rand index as a measure of the percentage of correct decisions made by the algorithm. It can be computed using the following formula RI={\frac {TP+TN}{TP+FP+FN+TN}}
 

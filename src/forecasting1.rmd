@@ -45,7 +45,7 @@ resources:
 
 ##Preparation of data
 
-The exchange data needs to be loaded, paritioned, and scaled.
+The exchange data needs to be loaded, partitioned, and scaled.
 
 ```{r prep-data-f1}
 #going to import the Excel spreadsheet WhiteWine dataset
@@ -59,8 +59,15 @@ head(exchange.raw)
 str(exchange.raw)
 ```
 
-We want to scale the data to allow  for faster training. 
+We want to scale the data to allow for faster training. 
 
+```{r norm-func}
+norm_func <- function(x){
+     min_x <- min(x)
+
+     return((x - min_x)/(max(x) - min_x))
+} 
+```
 ```{r scale-exchange-f1}
 exchange.scaled <- exchange.raw
 
@@ -68,6 +75,14 @@ exchange.scaled[3] <- scale(exchange.scaled[3])
 
 #Summary of scaled wine data
 summary(exchange.scaled)
+```
+```{r normalise-exchange-f1}
+exchange.normalised <- exchange.raw
+
+exchange.normalised[3] <- norm_func(exchange.normalised[3])
+
+#Summary of scaled wine data
+summary(exchange.normalised)
 ```
 
 And partition the data into a set for training and another for testing the neural network after.
@@ -81,12 +96,22 @@ exchange.scaled_test <- tail(exchange.scaled, -320) #exchange.scaled[-1:-320, 1:
 summary(exchange.scaled_train)
 summary(exchange.scaled_test)
 ```
+```{r subset-norm-exchange-f1}
+exchange.normalised_train <- head(exchange.normalised, 320)
+exchange.normalised_test <- tail(exchange.normalised, -320) #exchange.normalised[-1:-320, 1:3] #also works!
+
+
+#Summary of scaled data
+summary(exchange.normalised_train)
+summary(exchange.normalised_test)
+```
 
 ###Setting up the training data
 
 Because we're looking to train the neural network on time-series data, we have to transform the data to make it easy to pass in time based input, which means we need to provide more than 1 input value at a time to train against the desired output; to that end, below is a code chunk that takes the exchange rate values and creates rows where the last entry is the desired output, the third is considered day 0 and the 1st to entries are 2 previous days from day 0.
 
 Before the data is ready, a function can be created in order to re-use the functionality over and over; this way the same code can be applied to generating out test data as the training data.
+
 
 ```{r matrix-func-f1}
 vector_to_time_series_data <- function(vec, colCount) {
@@ -120,7 +145,7 @@ head(staggered_data_frame)
 
 ##Creating & using the neural net
 
-###Training the netwotk
+###Training the network
 
 Now we have the data in a format such that we can provide 3 consecutive days as input and the following day as desired output, we are ready to train the neural network.
 
@@ -136,9 +161,9 @@ Now the neural network has been trained we can view a representation of its stru
 plot(mlp.nn1)
 ```
 
-###Testing the netwotk
+###Testing the network
 
-Before we can test the neural network against test data we need to transform the test data we took from the original dataset and transform it so we can pass in three input variables similarly to how the network was trained. Picking the number of inputs and what those inputs might be is part of the challenge of creating a neural network for time-series data; it's pretty obvious that one input value will hardly help project a future value but what value to pick isn't clear. The lower the number or inputs the greater likelihood of error but the higher the number of inputs, the increased cimplexity and longer training period.  I've picked 3 consecutive days to sart with but will experiment with other configuations afterwards.
+Before we can test the neural network against test data we need to transform the test data we took from the original dataset and transform it so we can pass in three input variables similarly to how the network was trained. Picking the number of inputs and what those inputs might be is part of the challenge of creating a neural network for time-series data; it's pretty obvious that one input value will hardly help project a future value but what value to pick isn't clear. The lower the number or inputs the greater likelihood of error but the higher the number of inputs, the increased complexity and longer training period.  I've picked 3 consecutive days to start with but will experiment with other configurations afterwards.
 
 ```{r prep-test-mlp-f1}
 staggered_test_data_frame <- vector_to_time_series_data(exchange.scaled_test$`USD/EUR`, 3)
@@ -164,13 +189,13 @@ print(test_v_expected.nn1)
 
 ### Evaluating the predictions
 
-There are two ways we can look at the qualityof the performance of the neural netowrk:
+There are two ways we can look at the quality of the performance of the neural network:
 - Various single number values derived from the difference between the predicted and actual values
-- Visualising the data, for example, by plotting the estimates and actual values on the sme grapg to more easily draw comparisons by eye.
+- Visualising the data, for example, by plotting the estimates and actual values on the same graph to more easily draw comparisons by eye.
 
 #### Numeric indicators
 
-And then the Sum of Square Errors, and Mean Squared Error values can be derived in order to look at the performance of the trained nural network against test data. The closer to 0 the values are, the better.
+And then the Sum of Square Errors, and Mean Squared Error values can be derived in order to look at the performance of the trained neural network against test data. The closer to 0 the values are, the better.
 
 ```{r indicator-funcs1-mlp-f1}
 output_delta_func <- function (expected, actual) {
@@ -244,11 +269,11 @@ linetypes <- line_compare_nn_to_actual(test_v_expected.nn1, test_v_expected.nn1$
 legend(45, -.25, names(test_v_expected.nn1), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
 ```
 
-What's intersting about looking at it visually, is how it's more obvious from this perspective than it is from indicators values, that the neural net predictions are similar overall but with a latency of a few days; this isn't very useful for forecasting and might actually suggest a kind of overfitting, where the network has been too tightly trained with teh training data. I'm not certain that this is the case however because this graph is based on data that was not used for training purpose.
+What's interesting about looking at it visually, is how it's more obvious from this perspective than it is from indicators values, that the neural net predictions are similar overall but with a latency of a few days; this isn't very useful for forecasting and might actually suggest a kind of over-fitting, where the network has been too tightly trained with the training data. I'm not certain that this is the case however because this graph is based on data that was not used for training purpose.
 
-## Experimenting with other Neural Network configucations
+## Experimenting with other Neural Network configurations
 
-Now thgat we have one neural net with performance results, it's time to use this as a benchmark/baseline and create other neural networks to see if we can improve on performance.
+Now that we have one neural net with performance results, it's time to use this as a benchmark/baseline and create other neural networks to see if we can improve on performance.
 
 ### Non-linear output
 
@@ -278,9 +303,9 @@ The outcome of this neural network training appears to be identical to the first
 
 ### Alternative hidden layer structures
 
-The hidden layers are the 'secret sauce' of this kind of neural network, the layers describe nuerons consisting of nodes and vertices that connect to other neuron nodes; the verteces between nodes ajust the values as they are passed from node to node resulting in the anwer at the end of the chain off layers. The first neural network had 3 hidden layers each powers of 2, starting with 8 and halving at each next layer.
+The hidden layers are the 'secret sauce' of this kind of neural network, the layers describe neurons consisting of nodes and vertices that connect to other neuron nodes; the vertices between nodes adjust the values as they are passed from node to node resulting in the answer at the end of the chain off layers. The first neural network had 3 hidden layers each powers of 2, starting with 8 and halving at each next layer.
 
-The next step is to experiment with the same dataset and the same input values but experiment with the accuracy of some different hinder layer stuctures like:
+The next step is to experiment with the same dataset and the same input values but experiment with the accuracy of some different hinder layer structures like:
 
 1. 6, 9, 6
 2. 6, 9, 6, 3
