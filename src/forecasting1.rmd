@@ -146,13 +146,19 @@ staggered_test_data_frame <- vector_to_time_series_data(exchange.scaled_test$`US
 
 Now that the test data is arranged in the same way that the training data is, the neural network can be tested.
 
+```{r make_comparison_table_func-f1}
+expected_v_test_func <- function (expected, mlp_test) {
+  expected_v_test <- cbind(expected, as.data.frame(head(mlp_test$net.result, -1)))
+  colnames(expected_v_test) <- c("Expected Output", "Neural Net Output")
+  return(expected_v_test)
+}
+```
 ```{r testing-mlp-f1}
 mlp.nn1_results <- compute(mlp.nn1, staggered_test_data_frame)
 
 test_expected_data.nn1 <- tail(exchange.scaled_test$`USD/EUR`, -3)
 
-test_v_expected.nn1 <- cbind(test_expected_data.nn1, as.data.frame(head(mlp.nn1_results$net.result, -1)))
-colnames(test_v_expected.nn1) <- c("Expected Output", "Neural Net Output")
+test_v_expected.nn1 <- expected_v_test_func(test_expected_data.nn1, mlp.nn1_results)
 print(test_v_expected.nn1)
 ```
 
@@ -189,7 +195,7 @@ Additionally we can look are the performance in terms of the Root Mean Square Er
 
 What follows are the RMSE and MAPE values for the neural net.
 
-```{r train-mlp-nonl-f1}
+```{r run-indicator2-mlp-f1}
 #RMSE for the nn
 rmse(test_v_expected.nn1$`Neural Net Output`, test_v_expected.nn1$`Expected Output`)
 #MAPE for the nn
@@ -238,21 +244,25 @@ legend(45, -.25, names(test_v_expected.nn1), cex=0.8, col=colors, pch=plotchar, 
 
 What's intersting about looking at it visually, is how it's more obvious from this perspective than it is from indicators values, that the neural net predictions are similar overall but with a latency of a few days; this isn't very useful for forecasting and might actually suggest a kind of overfitting, where the network has been too tightly trained with teh training data. I'm not certain that this is the case however because this graph is based on data that was not used for training purpose.
 
-## Experimenting with other Neural Netowrk configucations
+## Experimenting with other Neural Network configucations
+
+Now thgat we have one neural net with performance results, it's time to use this as a benchmark/baseline and create other neural networks to see if we can improve on performance.
+
+### Non-linear output
 
 The first configuration to experiment with in the `neuralnet` package should be the `linear.output` value which is true by default. It occurs to me that currency rates don't change in a linear fashion so we should create a neural network that reflects this.
 
 ```{r train-mlp-nonl-f1}
-#mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
-
 mlp.nn1_nonl <- neuralnet(mlp.form1, staggered_data_matrix, hidden = c(8,4,2), threshold=0.01, linear.output=FALSE)
 ```
 ```{r testing-mlp-nonl-f1}
-mlp.nn1_nonl_results <- compute(mlp.nn1_nonl, staggered_test_data_frame)
+mlp.nn1_results <- compute(mlp.nn1, staggered_test_data_frame)
+
+test_expected_data.nn1 <- tail(exchange.scaled_test$`USD/EUR`, -3)mlp.nn1_nonl_results <- compute(mlp.nn1_nonl, staggered_test_data_frame)
 
 test_expected_data.nn1_nonl <- tail(exchange.scaled_test$`USD/EUR`, -3)
 
-test_v_expected.nn1_nonl <- cbind(test_expected_data, as.data.frame(head(mlp.nn1_results$net.result, -1)))
+test_v_expected.nn1_nonl <- cbind(test_expected_data.nn1_nonl, as.data.frame(head(mlp.nn1_results$net.result, -1)))
 colnames(test_v_expected.nn1_nonl) <- c("Expected Output", "Neural Net Output")
 print(test_v_expected.nn1_nonl)
 ```
@@ -263,6 +273,96 @@ sse_func(test_delta.nn1_nonl)
 #MSE of this first nn
 mse_func(test_delta.nn1_nonl)
 ```
+
+The outcome of this neural network training appears to be identical to the first one so we can discount the `linear.output` function argument as relevant for the dataset.
+
+### Alternative hidden layer structures
+
+The hidden layers are the 'secret sauce' of this kind of neural network, the layers describe nuerons consisting of nodes and vertices that connect to other neuron nodes; the verteces between nodes ajust the values as they are passed from node to node resulting in the anwer at the end of the chain off layers. The first neural network had 3 hidden layers each powers of 2, starting with 8 and halving at each next layer.
+
+The next step is to experiment with the same dataset and the same input values but experiment with the accuracy of some different hinder layer stuctures like:
+
+1. 6, 9, 6
+2. 6, 9, 6, 3
+3. 12, 8, 4
+4. 16, 9, 4
+
+### {6, 9, 6} hidden layer structure
+
+```{r train-mlp-6-9-6-f1}
+#mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
+
+mlp.nn_6_9_6 <- neuralnet(mlp.form1, staggered_data_matrix, hidden = c(6, 9, 6), threshold=0.05, stepmax = 800000)
+```
+```{r display-mlp-6-9-6-f1}
+plot(mlp.nn_6_9_6)
+```
+
+```{r comparison-table-mlp-6-9-6-f1}
+mlp.nn2_results <- compute(mlp.nn_6_9_6, staggered_test_data_frame)
+
+test_expected_data.nn2 <- tail(exchange.scaled_test$`USD/EUR`, -3)
+
+test_v_expected.nn2 <- expected_v_test_func(test_expected_data.nn2, mlp.nn2_results)
+```
+```{r run-indicator-funcs-mlp-6-9-6-f1}
+test_delta.nn2 <- output_delta_func(test_v_expected.nn2$`Expected Output`, test_v_expected.nn2$`Neural Net Output`)
+#SSE of this first nn
+sse_func(test_delta.nn2)
+#MSE of this first nn
+mse_func(test_delta.nn2)
+#RMSE for the nn
+rmse(test_v_expected.nn2$`Neural Net Output`, test_v_expected.nn2$`Expected Output`)
+#MAPE for the nn
+percent(mape(test_v_expected.nn2$`Neural Net Output`, test_v_expected.nn2$`Expected Output`))
+```
+
+```{r line-graph-mlp-6-9-6-f1}
+# Create Line Chart
+line_compare_nn_to_actual(test_v_expected.nn2, test_v_expected.nn2$`Expected Output`)
+
+# add a legend 
+legend(45, -.25, names(test_v_expected.nn2), cex=0.8, col=colors, pch=plotchar, lty=linetype, title="Exchange Rates")
+```
+
+### {6, 9, 6, 3} hidden layer structure
+
+```{r train-mlp-6-9-6-3-f1}
+#mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
+
+mlp.nn_6_9_6_3 <- neuralnet(mlp.form1, staggered_data_matrix, hidden = c(6, 9, 6, 3), threshold=0.05, stepmax = 800000)
+```
+```{r display-mlp-6-9-6-3-f1}
+plot(mlp.nn_6_9_6_3)
+```
+
+```{r comparison-table-mlp-6-9-6-3-f1}
+mlp.nn3_results <- compute(mlp.nn_6_9_6_3, staggered_test_data_frame)
+
+test_expected_data.nn3 <- tail(exchange.scaled_test$`USD/EUR`, -3)
+
+test_v_expected.nn3 <- expected_v_test_func(test_expected_data.nn3, mlp.nn3_results)
+```
+```{r run-indicator-funcs-mlp-6-9-6-3-f1}
+test_delta.nn3 <- output_delta_func(test_v_expected.nn3$`Expected Output`, test_v_expected.nn3$`Neural Net Output`)
+#SSE of this first nn
+sse_func(test_delta.nn3)
+#MSE of this first nn
+mse_func(test_delta.nn3)
+#RMSE for the nn
+rmse(test_v_expected.nn3$`Neural Net Output`, test_v_expected.nn3$`Expected Output`)
+#MAPE for the nn
+percent(mape(test_v_expected.nn3$`Neural Net Output`, test_v_expected.nn3$`Expected Output`))
+```
+
+```{r line-graph-mlp-6-9-6-3-f1}
+# Create Line Chart
+line_compare_nn_to_actual(test_v_expected.nn3, test_v_expected.nn3$`Expected Output`)
+
+# add a legend 
+legend(45, -.25, names(test_v_expected.nn3), cex=0.8, col=colors, pch=plotchar, lty=linetype, title="Exchange Rates")
+```
+
 
 ## Conclusion
 
