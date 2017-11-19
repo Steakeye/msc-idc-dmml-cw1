@@ -115,7 +115,7 @@ staggered_data_frame <- vector_to_time_series_data(exchange.scaled_train$`USD/EU
 colnames(staggered_data_frame) <- c("Input_dneg2", "Input_dneg1", "Input_d0", "Output")
 
 #Summary of training data
-head(staggered_data_matrix)
+head(staggered_data_frame)
 ```
 
 ##Creating & using the neural net
@@ -127,7 +127,7 @@ Now we have the data in a format such that we can provide 3 consecutive days as 
 ```{r train-mlp-f1}
 mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
 
-mlp.nn1 <- neuralnet(mlp.form1, staggered_data_matrix, hidden = c(8,4,2), threshold=0.01)
+mlp.nn1 <- neuralnet(mlp.form1, staggered_data_frame, hidden = c(8,4,2), threshold=0.01)
 ```
 
 Now the neural network has been trained we can view a representation of its structure.
@@ -232,14 +232,16 @@ line_compare_nn_to_actual <- function (compare_data, token_x) {
   
   # add a title and subtitle 
   title("Exchange Rate Prediction Versus Actual", "Comparing actual values for USD/EUR rates against values derived from a Neural Network")
+  
+  return(list(linetype, plotchar, colors))
 }
 ```
 ```{r line-graph-mlp-f1}
 # Create Line Chart
-line_compare_nn_to_actual(test_v_expected.nn1, test_v_expected.nn1$`Expected Output`)
+linetypes <- line_compare_nn_to_actual(test_v_expected.nn1, test_v_expected.nn1$`Expected Output`)
 
 # add a legend 
-legend(45, -.25, names(test_v_expected.nn1), cex=0.8, col=colors, pch=plotchar, lty=linetype, title="Exchange Rates")
+legend(45, -.25, names(test_v_expected.nn1), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
 ```
 
 What's intersting about looking at it visually, is how it's more obvious from this perspective than it is from indicators values, that the neural net predictions are similar overall but with a latency of a few days; this isn't very useful for forecasting and might actually suggest a kind of overfitting, where the network has been too tightly trained with teh training data. I'm not certain that this is the case however because this graph is based on data that was not used for training purpose.
@@ -253,12 +255,10 @@ Now thgat we have one neural net with performance results, it's time to use this
 The first configuration to experiment with in the `neuralnet` package should be the `linear.output` value which is true by default. It occurs to me that currency rates don't change in a linear fashion so we should create a neural network that reflects this.
 
 ```{r train-mlp-nonl-f1}
-mlp.nn1_nonl <- neuralnet(mlp.form1, staggered_data_matrix, hidden = c(8,4,2), threshold=0.01, linear.output=FALSE)
+mlp.nn1_nonl <- neuralnet(mlp.form1, staggered_data_frame, hidden = c(8,4,2), threshold=0.01, linear.output=FALSE)
 ```
 ```{r testing-mlp-nonl-f1}
-mlp.nn1_results <- compute(mlp.nn1, staggered_test_data_frame)
-
-test_expected_data.nn1 <- tail(exchange.scaled_test$`USD/EUR`, -3)mlp.nn1_nonl_results <- compute(mlp.nn1_nonl, staggered_test_data_frame)
+mlp.nn1_nonl_results <- compute(mlp.nn1_nonl, staggered_test_data_frame)
 
 test_expected_data.nn1_nonl <- tail(exchange.scaled_test$`USD/EUR`, -3)
 
@@ -292,7 +292,7 @@ The next step is to experiment with the same dataset and the same input values b
 ```{r train-mlp-6-9-6-f1}
 #mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
 
-mlp.nn_6_9_6 <- neuralnet(mlp.form1, staggered_data_matrix, hidden = c(6, 9, 6), threshold=0.05, stepmax = 800000)
+mlp.nn_6_9_6 <- neuralnet(mlp.form1, staggered_data_frame, hidden = c(6, 9, 6), threshold=0.05, stepmax = 800000)
 ```
 ```{r display-mlp-6-9-6-f1}
 plot(mlp.nn_6_9_6)
@@ -319,10 +319,10 @@ percent(mape(test_v_expected.nn2$`Neural Net Output`, test_v_expected.nn2$`Expec
 
 ```{r line-graph-mlp-6-9-6-f1}
 # Create Line Chart
-line_compare_nn_to_actual(test_v_expected.nn2, test_v_expected.nn2$`Expected Output`)
+linetypes <- line_compare_nn_to_actual(test_v_expected.nn2, test_v_expected.nn2$`Expected Output`)
 
 # add a legend 
-legend(45, -.25, names(test_v_expected.nn2), cex=0.8, col=colors, pch=plotchar, lty=linetype, title="Exchange Rates")
+legend(45, -.25, names(test_v_expected.nn2), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
 ```
 
 ### {6, 9, 6, 3} hidden layer structure
@@ -330,7 +330,7 @@ legend(45, -.25, names(test_v_expected.nn2), cex=0.8, col=colors, pch=plotchar, 
 ```{r train-mlp-6-9-6-3-f1}
 #mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
 
-mlp.nn_6_9_6_3 <- neuralnet(mlp.form1, staggered_data_matrix, hidden = c(6, 9, 6, 3), threshold=0.05, stepmax = 800000)
+mlp.nn_6_9_6_3 <- neuralnet(mlp.form1, staggered_data_frame, hidden = c(6, 9, 6, 3), threshold=0.05, stepmax = 1200000)
 ```
 ```{r display-mlp-6-9-6-3-f1}
 plot(mlp.nn_6_9_6_3)
@@ -357,11 +357,89 @@ percent(mape(test_v_expected.nn3$`Neural Net Output`, test_v_expected.nn3$`Expec
 
 ```{r line-graph-mlp-6-9-6-3-f1}
 # Create Line Chart
-line_compare_nn_to_actual(test_v_expected.nn3, test_v_expected.nn3$`Expected Output`)
+linetypes <- line_compare_nn_to_actual(test_v_expected.nn3, test_v_expected.nn3$`Expected Output`)
 
 # add a legend 
-legend(45, -.25, names(test_v_expected.nn3), cex=0.8, col=colors, pch=plotchar, lty=linetype, title="Exchange Rates")
+legend(45, -.25, names(test_v_expected.nn3), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
 ```
+
+
+### {12, 8, 4} hidden layer structure
+
+```{r train-mlp-12-8-4-f1}
+#mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
+
+mlp.nn_12_8_4 <- neuralnet(mlp.form1, staggered_data_frame, hidden = c(12, 8, 4), threshold=0.05, stepmax = 1200000)
+```
+```{r display-mlp-12-8-4-f1}
+plot(mlp.nn_12_8_4)
+```
+
+```{r comparison-table-mlp-mlp.nn-12-8-4-f1}
+mlp.nn4_results <- compute(mlp.nn_12_8_4, staggered_test_data_frame)
+
+test_expected_data.nn4 <- tail(exchange.scaled_test$`USD/EUR`, -3)
+
+test_v_expected.nn4 <- expected_v_test_func(test_expected_data.nn4, mlp.nn4_results)
+```
+```{r run-indicator-funcs-mlp-12-8-4-f1}
+test_delta.nn4 <- output_delta_func(test_v_expected.nn4$`Expected Output`, test_v_expected.nn4$`Neural Net Output`)
+#SSE of this first nn
+sse_func(test_delta.nn4)
+#MSE of this first nn
+mse_func(test_delta.nn4)
+#RMSE for the nn
+rmse(test_v_expected.nn4$`Neural Net Output`, test_v_expected.nn4$`Expected Output`)
+#MAPE for the nn
+percent(mape(test_v_expected.nn4$`Neural Net Output`, test_v_expected.nn4$`Expected Output`))
+```
+
+```{r line-graph-mlp-12-8-4-f1}
+# Create Line Chart
+linetypes <- line_compare_nn_to_actual(test_v_expected.nn4, test_v_expected.nn4$`Expected Output`)
+
+# add a legend 
+legend(45, -.25, names(test_v_expected.nn4), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
+```
+
+### {16, 9, 4} hidden layer structure
+
+```{r train-mlp-16-9-4-f1}
+#mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
+
+mlp.nn_16_9_4 <- neuralnet(mlp.form1, staggered_data_frame, hidden = c(16, 9, 4), threshold=0.05, stepmax = 1200000)
+```
+```{r display-mlp-16-9-4-f1}
+plot(mlp.nn_16_9_4)
+```
+
+```{r comparison-table-mlp-mlp.nn-16-9-4-f1}
+mlp.nn5_results <- compute(mlp.nn_16_9_4, staggered_test_data_frame)
+
+test_expected_data.nn5 <- tail(exchange.scaled_test$`USD/EUR`, -3)
+
+test_v_expected.nn5 <- expected_v_test_func(test_expected_data.nn5, mlp.nn5_results)
+```
+```{r run-indicator-funcs-mlp-16-9-4-f1}
+test_delta.nn5 <- output_delta_func(test_v_expected.nn5$`Expected Output`, test_v_expected.nn5$`Neural Net Output`)
+#SSE of this first nn
+sse_func(test_delta.nn5)
+#MSE of this first nn
+mse_func(test_delta.nn5)
+#RMSE for the nn
+rmse(test_v_expected.nn5$`Neural Net Output`, test_v_expected.nn5$`Expected Output`)
+#MAPE for the nn
+percent(mape(test_v_expected.nn5$`Neural Net Output`, test_v_expected.nn5$`Expected Output`))
+```
+
+```{r line-graph-mlp-16-9-4-f1}
+# Create Line Chart
+linetypes <- line_compare_nn_to_actual(test_v_expected.nn5, test_v_expected.nn5$`Expected Output`)
+
+# add a legend 
+legend(45, -.25, names(test_v_expected.nn5), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
+```
+
 
 
 ## Conclusion
