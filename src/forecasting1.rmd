@@ -201,42 +201,39 @@ percent(mape(test_v_expected.nn1$`Neural Net Output`, test_v_expected.nn1$`Expec
 That follows is a graph plotting neural net predicted values against actual values.
 
 
+```{r line-graph-func-mlp-f1}
+line_compare_nn_to_actual <- function (compare_data, token_x) {
+  count.col <- ncol(compare_data)
+
+  # get the range for the x and y axis 
+  plot_range.y <- range(compare_data)
+  plot_range.x <- range(1:nrow(compare_data))
+  
+  # set up the plot 
+  plot(token_x, type="n", xlab="Days",
+    	ylab="Normalised Exchange Rate", ylim=plot_range.y, xlim=plot_range.x) 
+  
+  colors <- c(6, 4)
+  linetype <- c(1:count.col) 
+  plotchar <- seq(1, 0)
+  
+  # add lines 
+  for (i in 1:count.col) { 
+    #tree <- subset(Orange, Tree==i) 
+    lines(test_v_expected.nn1[i], type="b", lwd=1.5,
+      lty=linetype[i], col=colors[i], pch=plotchar[i]) 
+  } 
+  
+  # add a title and subtitle 
+  title("Exchange Rate Prediction Versus Actual", "Comparing actual values for USD/EUR rates against values derived from a Neural Network")
+}
+```
 ```{r line-graph-mlp-f1}
 # Create Line Chart
-
-# convert factor to numeric for convenience 
-#Orange$Tree <- as.numeric(Orange$Tree) 
-#ntrees <- max(Orange$Tree)
-count.col <- ncol(test_v_expected.nn1)
-exchange_range <- range(test_v_expected.nn1)
-
-# get the range for the x and y axis 
-plot_range.y <- range(test_v_expected.nn1)
-plot_range.x <- 1:nrow(test_v_expected.nn1)
-
-# set up the plot 
-#plot(test_v_expected.nn1$`Expected Output`, type="n", xlab="Days",
-
-plot(test_v_expected.nn1$`Expected Output`, type="n", xlab="Days",
-  	ylab="Normalised Exchange Rate", ylim=plot_range.y ) 
-
-colors <- c(6, 4)
-linetype <- c(1:count.col) 
-plotchar <- seq(1, 0)
-
-# add lines 
-for (i in 1:count.col) { 
-  #tree <- subset(Orange, Tree==i) 
-  lines(test_v_expected.nn1[i], type="b", lwd=1.5,
-    lty=linetype[i], col=colors[i], pch=plotchar[i]) 
-} 
-
-# add a title and subtitle 
-title("Exchange Rate Prediction Versus Actual", "Comparing actual values for USD/EUR rates against values derived from a Neural Network")
+line_compare_nn_to_actual(test_v_expected.nn1, test_v_expected.nn1$`Expected Output`)
 
 # add a legend 
-legend(45, -.25, names(test_v_expected.nn1), cex=0.8, col=colors,
-   	pch=plotchar, lty=linetype, title="Exchange Rates")
+legend(45, -.25, names(test_v_expected.nn1), cex=0.8, col=colors, pch=plotchar, lty=linetype, title="Exchange Rates")
 ```
 
 What's intersting about looking at it visually, is how it's more obvious from this perspective than it is from indicators values, that the neural net predictions are similar overall but with a latency of a few days; this isn't very useful for forecasting and might actually suggest a kind of overfitting, where the network has been too tightly trained with teh training data. I'm not certain that this is the case however because this graph is based on data that was not used for training purpose.
