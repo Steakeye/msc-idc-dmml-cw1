@@ -152,7 +152,7 @@ Now we have the data in a format such that we can provide 3 consecutive days as 
 ```{r train-mlp-f1}
 mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
 
-mlp.nn1 <- neuralnet(mlp.form1, staggered_data_frame, hidden = c(8,4,2), threshold=0.01)
+mlp.nn1 <- neuralnet(mlp.form1, staggered_data_frame, hidden=c(8,4,2), threshold=0.01)
 ```
 
 Now the neural network has been trained we can view a representation of its structure.
@@ -184,7 +184,7 @@ mlp.nn1_results <- compute(mlp.nn1, staggered_test_data_frame)
 test_expected_data.nn1 <- tail(exchange.scaled_test$`USD/EUR`, -3)
 
 test_v_expected.nn1 <- expected_v_test_func(test_expected_data.nn1, mlp.nn1_results)
-print(test_v_expected.nn1)
+head(test_v_expected.nn1)
 ```
 
 ### Evaluating the predictions
@@ -250,7 +250,6 @@ line_compare_nn_to_actual <- function (compare_data, token_x) {
   
   # add lines 
   for (i in 1:count.col) { 
-    #tree <- subset(Orange, Tree==i) 
     lines(test_v_expected.nn1[i], type="b", lwd=1.5,
       lty=linetype[i], col=colors[i], pch=plotchar[i]) 
   } 
@@ -275,13 +274,60 @@ What's interesting about looking at it visually, is how it's more obvious from t
 
 Now that we have one neural net with performance results, it's time to use this as a benchmark/baseline and create other neural networks to see if we can improve on performance.
 
+### Normalised data instead of scaled data
+```{r matrix-exchange-normalised-f1}
+normalised_staggered_data_frame <- vector_to_time_series_data(exchange.normalised_train$`USD/EUR`, 4)
+
+colnames(normalised_staggered_data_frame) <- c("Input_dneg2", "Input_dneg1", "Input_d0", "Output")
+
+#Summary of training data
+head(normalised_staggered_data_frame)
+```
+```{r train-mlp-norm-f1}
+#mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
+#mlp.nn1 <- neuralnet(mlp.form1, staggered_data_frame, hidden = c(8,4,2), threshold=0.01)
+
+#mlp.nn1_norm <- neuralnet(mlp.form1, normalised_staggered_data_frame, hidden=c(8,4,2), threshold=0.01)
+```
+```{r prep-test-mlp-norm-f1}
+#normalised_staggered_test_data_frame <- vector_to_time_series_data(exchange.scaled_test$`USD/EUR`, 3)
+```
+```{r testing-mlp-norm-f1}
+#mlp.nn1_norm_results <- compute(mlp.nn1_norm, normalised_staggered_test_data_frame)
+
+#test_expected_data.nn1_norm <- tail(exchange.normalised_test$`USD/EUR`, -3)
+
+#test_v_expected.nn1_norm <- expected_v_test_func(test_expected_data.nn1_norm, mlp.nn1_norm_results)
+#head(test_v_expected.nn1_norm)
+```
+```{r run-indicator-funcs1-mlp-norm-f1}
+#test_delta.nn1_norm <- output_delta_func(test_v_expected.nn1_norm$`Expected Output`, test_v_expected.nn1_norm$`Neural Net Output`)
+#SSE of this first nn
+#sse_func(test_delta.nn1_norm)
+#MSE of this first nn
+#mse_func(test_delta.nn1_norm)
+#RMSE for the nn
+#rmse(test_v_expected.nn1_norm$`Neural Net Output`, test_v_expected.nn1_norm$`Expected Output`)
+#MAPE for the nn
+#percent(mape(test_v_expected.nn1_norm$`Neural Net Output`, test_v_expected.nn1_norm$`Expected Output`))
+```
+```{r line-graph-mlp-norm-f1}
+# Create Line Chart
+#linetypes <- line_compare_nn_to_actual(test_v_expected.nn1_norm, test_v_expected.nn1_norm$`Expected Output`)
+
+# add a legend 
+#legend(45, -.25, names(test_v_expected.nn1_norm), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
+```
+
 ### Non-linear output
 
 The first configuration to experiment with in the `neuralnet` package should be the `linear.output` value which is true by default. It occurs to me that currency rates don't change in a linear fashion so we should create a neural network that reflects this.
 
 ```{r train-mlp-nonl-f1}
-mlp.nn1_nonl <- neuralnet(mlp.form1, staggered_data_frame, hidden = c(8,4,2), threshold=0.01, linear.output=FALSE)
+#mlp.nn1 <- neuralnet(mlp.form1, staggered_data_frame, hidden=c(8,4,2), threshold=0.01)
+mlp.nn1_nonl <- neuralnet(mlp.form1, staggered_data_frame, hidden=c(8,4,2), threshold=0.01, linear.output=FALSE, stepmax = 1200000)
 ```
+
 ```{r testing-mlp-nonl-f1}
 mlp.nn1_nonl_results <- compute(mlp.nn1_nonl, staggered_test_data_frame)
 
@@ -289,8 +335,9 @@ test_expected_data.nn1_nonl <- tail(exchange.scaled_test$`USD/EUR`, -3)
 
 test_v_expected.nn1_nonl <- cbind(test_expected_data.nn1_nonl, as.data.frame(head(mlp.nn1_results$net.result, -1)))
 colnames(test_v_expected.nn1_nonl) <- c("Expected Output", "Neural Net Output")
-print(test_v_expected.nn1_nonl)
+head(test_v_expected.nn1_nonl)
 ```
+
 ```{r run-indicator-funcs1-mlp-nonl-f1}
 test_delta.nn1_nonl <- output_delta_func(test_v_expected.nn1_nonl$`Expected Output`, test_v_expected.nn1_nonl$`Neural Net Output`)
 #SSE of this first nn
@@ -434,6 +481,7 @@ legend(45, -.25, names(test_v_expected.nn4), cex=0.8, col=linetypes[[3]], pch=li
 
 mlp.nn_16_9_4 <- neuralnet(mlp.form1, staggered_data_frame, hidden = c(16, 9, 4), threshold=0.05, stepmax = 1200000)
 ```
+
 ```{r display-mlp-16-9-4-f1}
 plot(mlp.nn_16_9_4)
 ```

@@ -43,3 +43,10 @@ csl: ../build/harvard-university-of-westminster.csl
 ```{r forecasting1, child = 'forecasting1.rmd'}
 ```
 
+<section>
+
+# References
+
+<div id="refs"></div>
+
+</section>
