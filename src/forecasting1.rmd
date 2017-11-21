@@ -101,8 +101,10 @@ exchange.normalised_train <- head(exchange.normalised, 320)
 exchange.normalised_test <- tail(exchange.normalised, -320) #exchange.normalised[-1:-320, 1:3] #also works!
 
 
-#Summary of scaled data
+#Summary of normalised data
+paste("training:")
 summary(exchange.normalised_train)
+paste("test:")
 summary(exchange.normalised_test)
 ```
 
@@ -240,6 +242,9 @@ line_compare_nn_to_actual <- function (compare_data, token_x) {
   plot_range.y <- range(compare_data)
   plot_range.x <- range(1:nrow(compare_data))
   
+  print(c("plot_range.y:",  plot_range.y, " - "))
+  print(c("compare_data:",  compare_data, " - "))
+  
   # set up the plot 
   plot(token_x, type="n", xlab="Days",
     	ylab="Normalised Exchange Rate", ylim=plot_range.y, xlim=plot_range.x) 
@@ -284,39 +289,46 @@ colnames(normalised_staggered_data_frame) <- c("Input_dneg2", "Input_dneg1", "In
 head(normalised_staggered_data_frame)
 ```
 ```{r train-mlp-norm-f1}
-#mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
-#mlp.nn1 <- neuralnet(mlp.form1, staggered_data_frame, hidden = c(8,4,2), threshold=0.01)
+mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
+mlp.nn1 <- neuralnet(mlp.form1, staggered_data_frame, hidden = c(8,4,2), threshold=0.01)
 
-#mlp.nn1_norm <- neuralnet(mlp.form1, normalised_staggered_data_frame, hidden=c(8,4,2), threshold=0.01)
+mlp.nn1_norm <- neuralnet(mlp.form1, normalised_staggered_data_frame, hidden=c(8,4,2), threshold=0.01)
 ```
+
 ```{r prep-test-mlp-norm-f1}
-#normalised_staggered_test_data_frame <- vector_to_time_series_data(exchange.scaled_test$`USD/EUR`, 3)
+normalised_staggered_test_data_frame <- vector_to_time_series_data(exchange.normalised_test$`USD/EUR`, 3)
+
+colnames(staggered_data_frame) <- c("Input_dneg2", "Input_dneg1", "Input_d0", "Output")
+
+#Summary of training data
+head(normalised_staggered_test_data_frame)
 ```
+
 ```{r testing-mlp-norm-f1}
-#mlp.nn1_norm_results <- compute(mlp.nn1_norm, normalised_staggered_test_data_frame)
+mlp.nn1_norm_results <- compute(mlp.nn1_norm, normalised_staggered_test_data_frame)
 
-#test_expected_data.nn1_norm <- tail(exchange.normalised_test$`USD/EUR`, -3)
+test_expected_data.nn1_norm <- tail(exchange.normalised_test$`USD/EUR`, -3)
 
-#test_v_expected.nn1_norm <- expected_v_test_func(test_expected_data.nn1_norm, mlp.nn1_norm_results)
-#head(test_v_expected.nn1_norm)
+test_v_expected.nn1_norm <- expected_v_test_func(test_expected_data.nn1_norm, mlp.nn1_norm_results)
+head(test_v_expected.nn1_norm)
 ```
 ```{r run-indicator-funcs1-mlp-norm-f1}
-#test_delta.nn1_norm <- output_delta_func(test_v_expected.nn1_norm$`Expected Output`, test_v_expected.nn1_norm$`Neural Net Output`)
+test_delta.nn1_norm <- output_delta_func(test_v_expected.nn1_norm$`Expected Output`, test_v_expected.nn1_norm$`Neural Net Output`)
 #SSE of this first nn
-#sse_func(test_delta.nn1_norm)
+sse_func(test_delta.nn1_norm)
 #MSE of this first nn
-#mse_func(test_delta.nn1_norm)
+mse_func(test_delta.nn1_norm)
 #RMSE for the nn
-#rmse(test_v_expected.nn1_norm$`Neural Net Output`, test_v_expected.nn1_norm$`Expected Output`)
+rmse(test_v_expected.nn1_norm$`Neural Net Output`, test_v_expected.nn1_norm$`Expected Output`)
 #MAPE for the nn
-#percent(mape(test_v_expected.nn1_norm$`Neural Net Output`, test_v_expected.nn1_norm$`Expected Output`))
+percent(mape(test_v_expected.nn1_norm$`Neural Net Output`, test_v_expected.nn1_norm$`Expected Output`))
 ```
 ```{r line-graph-mlp-norm-f1}
 # Create Line Chart
-#linetypes <- line_compare_nn_to_actual(test_v_expected.nn1_norm, test_v_expected.nn1_norm$`Expected Output`)
+linetypes <- line_compare_nn_to_actual(test_v_expected.nn1_norm, test_v_expected.nn1_norm$`Expected Output`)
 
 # add a legend 
-#legend(45, -.25, names(test_v_expected.nn1_norm), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
+legend(45, -.25, names(test_v_expected.nn1_norm), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
 ```
 
 ### Non-linear output
