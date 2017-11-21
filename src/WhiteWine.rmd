@@ -1,4 +1,4 @@
-﻿---
+---
 title: "WhiteWine"
 output: html_document
 ---
@@ -34,7 +34,7 @@ set.seed(1234)
 
 >You need to conduct the k-means clustering analysis of the white wine sheet. Find the ideal number of clusters (please justify your answer). Choose the best two possible numbers of clusters and perform the k-means algorithm for both candidates. Validate which clustering test is more accurate. For the winning test, get the mean of the each attribute of each group. Before conducting the k-means, please investigate if you need to add in your code any pre-processing task (justify your answer). Write a code in R Studio to address all the above issues. In your report, check the consistency of those produced clusters, with information obtained from column 12.
 
-In the White Win dataset provided, column 12 is labelled Quality; this is a qualitative value assigned by a human through the subjective means of tasting. Essentially, by try to cluster against all variables apart from Quality and then comparing against this variable, we are trying to look for some correlation between all the variables in combination and the subjective quality of wine.
+In the White Wine dataset provided, column 12 is labelled Quality; this is a qualitative value assigned by a human through the subjective means of tasting. Essentially, by try to cluster against all variables apart from Quality and then comparing against this variable, we are trying to look for some correlation between all the variables in combination and the subjective quality of wine.
 
 <!--
 1st Objective (partitioning clustering)
@@ -82,7 +82,7 @@ summary(wine.scaled)
 boxplot(wine.scaled, main="Looking at the data graphically", xlab="Wine Attributes", ylab="Scaled values") 
 ```
 
-We can see from these box-plots that some attributes seem to have some clear outliers that would suggest erroneous data and not just natural extremes. As such, we can decide that it's worth cleansing the data a little by removing these outliers from the dataset. For example, Alcohol on the most right column seems to have very clear boundaries as we'd expect from wine; when that is compared with some other attributes, they seem to tell a different story: Chlorides seems to have a lot of values that are in the upper quartile, and a large distance between min and max values but when you look it you can see there's a gradient that suggests a normal distribution; in contrast to this, the columns Residual Sugar, Free Sulfur Dioxide and Density all seem to not only have relatively large min and max distances but there seem to be uppermost values that with nearest neighbour values that are a relatively large distance away.
+We can see from these box-plots that some attributes seem to have some clear outliers that would suggest erroneous data and not just natural extremes [@RefWorks:doc:5a0bb9d3e4b099144f48efa7]. As such, we can decide that it's worth cleansing the data a little by removing these outliers from the dataset. For example, Alcohol on the most right column seems to have very clear boundaries as we'd expect from wine; when that is compared with some other attributes, they seem to tell a different story: Chlorides seems to have a lot of values that are in the upper quartile, and a large distance between min and max values but when you look it you can see there's a gradient that suggests a normal distribution; in contrast to this, the columns Residual Sugar, Free Sulfur Dioxide and Density all seem to not only have relatively large min and max distances but there seem to be uppermost values that with nearest neighbour values that are a relatively large distance away.
 
 <!--
 https://www.researchgate.net/post/Should_outliers_be_removed_before_or_after_data_transformation
@@ -186,7 +186,7 @@ boxplot(wine.scaled_cleansed_iqr, main="Looking at the IQR cleansed data graphic
 
 ```
 
-Now that the data looks a lot cleaner, it's time to start working with the data to try and find the best clustering. To begin with, nbclust will be used to see if that produces anything useful.
+Now that the data looks a lot cleaner, it's time to start working with the data to try and find the best clustering. To begin with, nbclust will be used to see if that produces anything useful [@RefWorks:doc:5a0f2483e4b0eb1ce0607726].
 
 ```{r num-of-clusters-iqr-ww1}
 number_of_clusters <- NbClust(wine.scaled_cleansed_iqr,
@@ -222,7 +222,7 @@ plot(1:15,
  ylab="Within groups sum of squares")
 ```
 
-The histogram for the Sum of Square Errors partially backs up the results of nbclust seeing as there is 'elbow' on the line at 2 on the Number of Clusters. Having said that, the kink between 5 and 7 suggest that this range should also be tested for k. 
+The histogram for the Sum of Square Errors partially backs up the results of nbclust seeing as there is 'elbow' [-@RefWorks:doc:5a0f2483e4b0eb1ce0607726] on the line at 2 on the Number of Clusters. Having said that, the kink between 5 and 7 suggest that this range should also be tested for k. 
 
 ```{r fit-data-ww1}
 
@@ -253,9 +253,9 @@ plotcluster(wine.scaled_cleansed_iqr, fit.km14$cluster)
 
 Now that we have experimented with various different values for k, when applying k-means clustering to the wine data, it's now time to see if it can be fit to the data that delivers anything obviously meaningful with regards to wine quality. While the strongest cluster option appears to be 2, I thought it was worth looking at how to map the data against quality by looking at the quality values as though they were factors; so, as you can see in the following table, there are only 7 unique values out of 10 possible scores for quality, meaning that trying to fit the data is actually easiest against 7 clusters, one per quality value.
 
-To compare the clusters to the quality scores we use a Confusion matrix to see where the values lie within those 2 sets of data. Further to that, to evaluate the confusion matrix mathematically, we will apply the Rand Index method, which Wikipedia (https://en.wikipedia.org/wiki/Cluster_analysis#External_evaluation) describes thusly:
+To compare the clusters to the quality scores we use a Confusion matrix to see where the values lie within those 2 sets of data. Further to that, to evaluate the confusion matrix mathematically, we will apply the Rand Index method describes thusly:
 
->The Rand index computes how similar the clusters (returned by the clustering algorithm) are to the benchmark classifications. One can also view the Rand index as a measure of the percentage of correct decisions made by the algorithm. It can be computed using the following formula RI={\frac {TP+TN}{TP+FP+FN+TN}}
+>The Rand index computes how similar the clusters (returned by the clustering algorithm) are to the benchmark classifications. One can also view the Rand index as a measure of the percentage of correct decisions made by the algorithm. It can be computed using the following formula RI={\frac {TP+TN}{TP+FP+FN+TN}} [@RefWorks:doc:5a0bb737e4b028f0a94165d8]
 
 ```{r bar-cleansed-wine-ww1}
 wine.q_table <- table(wine.q_cleansed)
