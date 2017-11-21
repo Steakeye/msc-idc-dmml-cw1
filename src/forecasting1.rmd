@@ -691,7 +691,7 @@ legend(0, .75, names(test_v_expected.nn2_4i), cex=0.8, col=linetypes[[3]], pch=l
 ```
 
 ### Performance After Input Experimentation
-```{r performance-mlp-structures}
+```{r performance-mlp-structures-update}
 # Display a table for performance so far
 perf_dt_2 <- rbindlist(performance_scores)
 perf_dt_2 <- cbind(names(performance_scores), perf_dt_2)
