@@ -130,7 +130,7 @@ d_list <- dendlist(
 cophentic_coefficient <- cor.dendlist(d_list, "cophenetic")
 ```
 
-Below is a matrix where the dendrograms are compared on a scale of 0 to 1 where 1 is 100% parity; below that is a digram expressing the same data but using pie charts to convey the information. By the share of the pies, we can see that the "single" (1) and "average" (3) methods deliver trees that are more similar to each other than they are to "complete".
+Below is a matrix where the dendrograms are compared on a scale of 0 to 1 where 1 is 100% parity; below that is a digram expressing the same data but using pie charts to convey the information. By the share of the pies, we can see that the "single" (1) and "average" (3) methods deliver trees that are more similar to each other than they are to "complete" [@RefWorks:doc:5a0bb282e4b051ffd92fd0f4].
 
 ```{r display-interpretation-ww2}
 # Print correlation matrix
@@ -182,7 +182,7 @@ wine_cleansed.dist_matrix_euclidean <- dist(wine.scaled_cleansed_bp_all) # Eucli
 summary(wine_cleansed.dist_matrix_euclidean)
 ```
 
-Now we can start clustering data using the hclust library. As per the requirements of this question we are calling hclust 3 times, to evaluate the "single", "complete" and "average" methods for hierarchical clustering. Assuming this hierarchical clustering is meant to try and find relationships between the quantitative Wine properties and Wine quality, and knowing from the previous question that there are only 7 unique values for quality across the entire dataset, the next step is to cut out cluster trees to only have 7 branches.
+Now we can start clustering data using the hclust library. As per the requirements of this question we are calling hclust 3 times, to evaluate the "single", "complete" and "average" methods for hierarchical clustering. Assuming this hierarchical clustering is meant to try and find relationships between the quantitative Wine properties and Wine quality, and knowing from the previous question that there are only 7 unique values for quality across the entire dataset, the next step is to cut out cluster trees to only have 7 branches [@RefWorks:doc:5a0bb87be4b0e70d304e0f7e].
 
 ```{r dendrograms-2-ww2}
 wine_cleansed.hclust_single <- hclust(wine_cleansed.dist_matrix_euclidean, method = "single")
