@@ -207,7 +207,7 @@ barplot(table(number_of_clusters$Best.n[1,]),
        main="Number of Clusters Chosen by 30 Criteria")
 ```
 
-From the bar graph above we can see that there seems to be an clear leader in terms of suggested number of clusters, being k = 2. There are however other values that should be explored to see how they compare: 3, 5 and 14. To confirm that the accuracy of this result in terms of the best contender for, we can plot the sum of square errors and looks for a pronounced bend in the graph. Where the most pronounced bend is, this is a contender for the value for k.
+From the bar graph above we can see that there seems to be an clear leader in terms of suggested number of clusters, being k = 2. There are however other values that should be explored to see how they compare: 3, 5 and 14. To confirm that the accuracy of this result in terms of the best contender for, we can plot the sum of square errors and looks for a pronounced bend in the graph. Where the most pronounced bend is, this is a contender for the value for k [@RefWorks:doc:5a0bb3f8e4b051ffd92fd130].
 
 ```{r sum-square-err-ww1}
 sse_list <- 0
