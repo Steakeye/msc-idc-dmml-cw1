@@ -35,6 +35,8 @@ csl: ../build/harvard-university-of-westminster.csl
 ---
 
 Blah blah 2 [@RefWorks:doc:5a10594ee4b096feb09fb15d]
+
+Test tuple [@RefWorks:doc:5a10594ee4b096feb09fb15d, @RefWorks:doc:5a0bb9d3e4b099144f48efa7]
 <section>
 
 # References
