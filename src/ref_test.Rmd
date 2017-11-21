@@ -1,0 +1,44 @@
+---
+title: "7BUIS008W Data Mining & Machine Learning - Coursework 1"
+author: "Andrew Keats"
+date: "22 November 2017"
+output:
+  customOutput::html5:
+    css: 
+      - ~/work/study/msc-idc/dmml/cw1/assets/css/modest.css
+      - ~/work/study/msc-idc/dmml/cw1/assets/css/custom.css
+    fig_caption: yes
+    keep_md: yes
+    toc: yes
+    toc_depth: 2
+    template: ~/work/study/msc-idc/dmml/cw1/templates/html5.html
+  html_document:
+    css:
+    - ~/work/study/msc-idc/dmml/cw1/assets/css/modest.css
+    - ~/work/study/msc-idc/dmml/cw1/assets/css/custom.css
+    fig_caption: yes
+    keep_md: yes
+    toc: yes
+    toc_depth: 2
+chapters: yes
+fontsize: 12pt
+css: null
+papersize: A4
+abstract: Show evidence of understanding of the clustering and modelling concepts,
+  through the implementation of requested algorithms using real datasets. Implementation
+  is performed in R environment, while students need to perform some critical evaluation
+  of their results.
+toc-depth: 2
+toc-title: Table of Contents
+bibliography: bibliography.bib
+csl: ../build/harvard-university-of-westminster.csl
+---
+
+Blah blah 2 [@RefWorks:doc:5a10594ee4b096feb09fb15d]
+<section>
+
+# References
+
+<div id="refs"></div>
+
+</section>
