@@ -252,8 +252,8 @@ line_compare_nn_to_actual <- function (compare_data, token_x) {
   plot_range.y <- range(compare_data)
   plot_range.x <- range(1:nrow(compare_data))
   
-  print(c("plot_range.y:",  plot_range.y, " - "))
-  print(c("compare_data:",  compare_data, " - "))
+  #print(c("plot_range.y:",  plot_range.y, " - "))
+  #print(c("compare_data:",  compare_data, " - "))
   
   # set up the plot 
   plot(token_x, type="n", xlab="Days", ylab="Normalised Exchange Rate") 
@@ -307,7 +307,7 @@ mlp.nn1 <- neuralnet(mlp.form1, staggered_data_frame, hidden = c(8,4,2), thresho
 mlp.nn1_norm <- neuralnet(mlp.form1, normalised_staggered_data_frame, hidden=c(8,4,2), threshold=0.01)
 ```
 
-```{r display-mlp-f1}
+```{r display-mlp-norm-f1}
 plot(mlp.nn1_norm)
 ```
 
@@ -332,12 +332,16 @@ head(test_v_expected.nn1_norm)
 test_delta.nn1_norm <- output_delta_func(test_v_expected.nn1_norm$`Expected Output`, test_v_expected.nn1_norm$`Neural Net Output`)
 #SSE of this first nn
 t_sse <- sse_func(test_delta.nn1_norm)
+t_sse
 #MSE of this first nn
 t_mse <- mse_func(test_delta.nn1_norm)
+t_mse
 #RMSE for the nn
 t_rmse <- rmse(test_v_expected.nn1_norm$`Neural Net Output`, test_v_expected.nn1_norm$`Expected Output`)
+t_rmse
 #MAPE for the nn
 t_mape <- percent(mape(test_v_expected.nn1_norm$`Neural Net Output`, test_v_expected.nn1_norm$`Expected Output`))
+t_mape
 
 performance_scores <- append(performance_scores, list(nn1_norm = list(t_sse, t_mse, t_rmse, t_mape)))
 
@@ -385,12 +389,16 @@ test_v_expected.nn2 <- expected_v_test_func(test_expected_data.nn2, mlp.nn2_resu
 test_delta.nn2 <- output_delta_func(test_v_expected.nn2$`Expected Output`, test_v_expected.nn2$`Neural Net Output`)
 #SSE of this first nn
 t_sse <- sse_func(test_delta.nn2)
+t_sse
 #MSE of this first nn
 t_mse <- mse_func(test_delta.nn2)
+t_mse
 #RMSE for the nn
 t_rmse <- rmse(test_v_expected.nn2$`Neural Net Output`, test_v_expected.nn2$`Expected Output`)
+t_rmse
 #MAPE for the nn
 t_mape <- percent(mape(test_v_expected.nn2$`Neural Net Output`, test_v_expected.nn2$`Expected Output`))
+t_mape
 
 performance_scores <- append(performance_scores, list(nn2 = list(t_sse, t_mse, t_rmse, t_mape)))
 
@@ -401,7 +409,7 @@ performance_scores <- append(performance_scores, list(nn2 = list(t_sse, t_mse, t
 linetypes <- line_compare_nn_to_actual(test_v_expected.nn2, test_v_expected.nn2$`Expected Output`)
 
 # add a legend 
-legend(45, -.25, names(test_v_expected.nn2), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
+legend(0, .75, names(test_v_expected.nn2), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
 ```
 
 ### {6, 9, 6, 3} hidden layer structure
@@ -426,12 +434,16 @@ test_v_expected.nn3 <- expected_v_test_func(test_expected_data.nn3, mlp.nn3_resu
 test_delta.nn3 <- output_delta_func(test_v_expected.nn3$`Expected Output`, test_v_expected.nn3$`Neural Net Output`)
 #SSE of this first nn
 t_sse <- sse_func(test_delta.nn3)
+t_sse
 #MSE of this first nn
 t_mse <- mse_func(test_delta.nn3)
+t_mse
 #RMSE for the nn
 t_rmse <- rmse(test_v_expected.nn3$`Neural Net Output`, test_v_expected.nn3$`Expected Output`)
+t_rmse
 #MAPE for the nn
 t_mape <- percent(mape(test_v_expected.nn3$`Neural Net Output`, test_v_expected.nn3$`Expected Output`))
+t_mape
 
 performance_scores <- append(performance_scores, list(nn3 = list(t_sse, t_mse, t_rmse, t_mape)))
 
@@ -442,7 +454,7 @@ performance_scores <- append(performance_scores, list(nn3 = list(t_sse, t_mse, t
 linetypes <- line_compare_nn_to_actual(test_v_expected.nn3, test_v_expected.nn3$`Expected Output`)
 
 # add a legend 
-legend(45, -.25, names(test_v_expected.nn3), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
+legend(0, .75, names(test_v_expected.nn3), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
 ```
 
 
@@ -468,12 +480,16 @@ test_v_expected.nn4 <- expected_v_test_func(test_expected_data.nn4, mlp.nn4_resu
 test_delta.nn4 <- output_delta_func(test_v_expected.nn4$`Expected Output`, test_v_expected.nn4$`Neural Net Output`)
 #SSE of this first nn
 t_sse <- sse_func(test_delta.nn4)
+t_sse
 #MSE of this first nn
 t_mse <- mse_func(test_delta.nn4)
+t_mse
 #RMSE for the nn
 t_rmse <- rmse(test_v_expected.nn4$`Neural Net Output`, test_v_expected.nn4$`Expected Output`)
+t_rmse
 #MAPE for the nn
 t_mape <- percent(mape(test_v_expected.nn4$`Neural Net Output`, test_v_expected.nn4$`Expected Output`))
+t_mape
 
 performance_scores <- append(performance_scores, list(nn4 = list(t_sse, t_mse, t_rmse, t_mape)))
 
@@ -484,7 +500,7 @@ performance_scores <- append(performance_scores, list(nn4 = list(t_sse, t_mse, t
 linetypes <- line_compare_nn_to_actual(test_v_expected.nn4, test_v_expected.nn4$`Expected Output`)
 
 # add a legend 
-legend(45, -.25, names(test_v_expected.nn4), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
+legend(0, .75, names(test_v_expected.nn4), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
 ```
 
 ### {16, 9, 4} hidden layer structure
@@ -510,12 +526,16 @@ test_v_expected.nn5 <- expected_v_test_func(test_expected_data.nn5, mlp.nn5_resu
 test_delta.nn5 <- output_delta_func(test_v_expected.nn5$`Expected Output`, test_v_expected.nn5$`Neural Net Output`)
 #SSE of this first nn
 t_sse <- sse_func(test_delta.nn5)
+t_sse
 #MSE of this first nn
 t_mse <- mse_func(test_delta.nn5)
+t_mse
 #RMSE for the nn
 t_rmse <- rmse(test_v_expected.nn5$`Neural Net Output`, test_v_expected.nn5$`Expected Output`)
+t_rmse
 #MAPE for the nn
 t_mape <- percent(mape(test_v_expected.nn5$`Neural Net Output`, test_v_expected.nn5$`Expected Output`))
+t_mape
 
 performance_scores <- append(performance_scores, list(nn5 = list(t_sse, t_mse, t_rmse, t_mape)))
 ```
@@ -525,16 +545,159 @@ performance_scores <- append(performance_scores, list(nn5 = list(t_sse, t_mse, t
 linetypes <- line_compare_nn_to_actual(test_v_expected.nn5, test_v_expected.nn5$`Expected Output`)
 
 # add a legend 
-legend(45, -.25, names(test_v_expected.nn5), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
+legend(0, .75, names(test_v_expected.nn5), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
 ```
 
 ### Performance Thus Far
-```{r perforamnce-mlp-structures}
+```{r performance-mlp-structures}
 # Display a table for performance so far
 perf_dt_1 <- rbindlist(performance_scores)
+perf_dt_1 <- cbind(names(performance_scores), perf_dt_1)
+colnames(perf_dt_1) <- c("NN", "SSE", "MSE", "RMSE", "MAPE")
 perf_dt_1
 ```
 
+Looking at the performnce metrics so far, it would make sense to invest more time experimenting with neural networks with the following hidden layers: {6, 9, 6} (nn2), {12, 8, 4} (nn4); for these two structures, all the metrics outperorm the other neural networks in terms of being closest to 0. What needs to be seen now is whether of not the accuracy of the netowrks can be improved by increasing or decreasing the number of inputs. It would make sense that accuracy should increase with greater number of inputs but for the same ok completeness, 2 inputs will be tried as well as 4.
+
+##Alternative Input Counts
+
+In order to eperiment with the imputs we need to first prepare the data.
+
+### Preparing the data for 2 inputs
+```{r matrix-exchange-normalised-2i-f1}
+normalised_staggered_2i_data_frame <- vector_to_time_series_data(exchange.normalised_train$`USD/EUR`, 3)
+
+colnames(normalised_staggered_2i_data_frame) <- c("Input_dneg1", "Input_d0", "Output")
+
+#Summary of training data
+head(normalised_staggered_2i_data_frame)
+```
+```{r prep-test-mlp-norm-2i-f1}
+normalised_staggered_2i_test_data_frame <- vector_to_time_series_data(exchange.normalised_test$`USD/EUR`, 2)
+
+colnames(normalised_staggered_2i_test_data_frame) <- c("Input_dneg1", "Input_d0")
+
+#Summary of training data
+head(normalised_staggered_2i_test_data_frame)
+```
+
+### Preparing the data for 4 inputs
+```{r matrix-exchange-normalised-4i-f1}
+normalised_staggered_4i_data_frame <- vector_to_time_series_data(exchange.normalised_train$`USD/EUR`, 5)
+
+colnames(normalised_staggered_4i_data_frame) <- c("Input_dneg3", "Input_dneg2", "Input_dneg1", "Input_d0", "Output")
+
+#Summary of training data
+head(normalised_staggered_4i_data_frame)
+```
+```{r prep-test-mlp-norm-4i-f1}
+normalised_staggered_4i_test_data_frame <- vector_to_time_series_data(exchange.normalised_test$`USD/EUR`, 4)
+
+colnames(normalised_staggered_4i_test_data_frame) <- c("Input_dneg3", "Input_dneg2", "Input_dneg1", "Input_d0")
+
+#Summary of training data
+head(normalised_staggered_4i_test_data_frame)
+```
+
+### {6, 9, 6} hidden layer structure with 2 inputs
+
+```{r train-mlp-2i-6-9-6-f1}
+mlp.form2 <- as.formula("Output ~ Input_d0 + Input_dneg1")
+
+mlp.nn_6_9_6_2i <- neuralnet(mlp.form2, normalised_staggered_2i_data_frame, hidden = c(6, 9, 6), threshold=0.05, stepmax = 800000)
+```
+```{r display-mlp-2i-6-9-6-f1}
+plot(mlp.nn_6_9_6_2i)
+```
+
+```{r comparison-table-mlp-2i-6-9-6-f1}
+mlp.nn2_2i_results <- compute(mlp.nn_6_9_6_2i, normalised_staggered_2i_test_data_frame)
+
+test_expected_data.nn2_2i <- tail(exchange.normalised_test$`USD/EUR`, -2)
+
+test_v_expected.nn2_2i <- expected_v_test_func(test_expected_data.nn2_2i, mlp.nn2_2i_results)
+```
+```{r run-indicator-funcs-mlp-2i-6-9-6-f1}
+test_delta.nn2_2i <- output_delta_func(test_v_expected.nn2_2i$`Expected Output`, test_v_expected.nn2_2i$`Neural Net Output`)
+#SSE of this first nn
+t_sse <- sse_func(test_delta.nn2_2i)
+t_sse
+#MSE of this first nn
+t_mse <- mse_func(test_delta.nn2_2i)
+t_mse
+#RMSE for the nn
+t_rmse <- rmse(test_v_expected.nn2_2i$`Neural Net Output`, test_v_expected.nn2_2i$`Expected Output`)
+t_rmse
+#MAPE for the nn
+t_mape <- percent(mape(test_v_expected.nn2_2i$`Neural Net Output`, test_v_expected.nn2_2i$`Expected Output`))
+t_mape
+
+performance_scores <- append(performance_scores, list(nn2_2i = list(t_sse, t_mse, t_rmse, t_mape)))
+
+```
+
+```{r line-graph-mlp-2i-6-9-6-f1}
+# Create Line Chart
+linetypes <- line_compare_nn_to_actual(test_v_expected.nn2_2i, test_v_expected.nn2_2i$`Expected Output`)
+
+# add a legend 
+legend(0, .75, names(test_v_expected.nn2_2i), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
+```
+
+
+### {6, 9, 6} hidden layer structure with 4 inputs
+
+```{r train-mlp-4i-6-9-6-f1}
+mlp.form4 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2 + Input_dneg3")
+
+mlp.nn_6_9_6_4i <- neuralnet(mlp.form4, normalised_staggered_4i_data_frame, hidden = c(6, 9, 6), threshold=0.05, stepmax = 800000)
+```
+```{r display-mlp-4i-6-9-6-f1}
+plot(mlp.nn_6_9_6_4i)
+```
+
+```{r comparison-table-mlp-4i-6-9-6-f1}
+mlp.nn2_4i_results <- compute(mlp.nn_6_9_6_4i, normalised_staggered_4i_test_data_frame)
+
+test_expected_data.nn2_4i <- tail(exchange.normalised_test$`USD/EUR`, -4)
+
+test_v_expected.nn2_4i <- expected_v_test_func(test_expected_data.nn2_4i, mlp.nn2_4i_results)
+```
+```{r run-indicator-funcs-mlp-4i-6-9-6-f1}
+test_delta.nn2_4i <- output_delta_func(test_v_expected.nn2_4i$`Expected Output`, test_v_expected.nn2_4i$`Neural Net Output`)
+#SSE of this first nn
+t_sse <- sse_func(test_delta.nn2_4i)
+t_sse
+#MSE of this first nn
+t_mse <- mse_func(test_delta.nn2_4i)
+t_mse
+#RMSE for the nn
+t_rmse <- rmse(test_v_expected.nn2_4i$`Neural Net Output`, test_v_expected.nn2_4i$`Expected Output`)
+t_rmse
+#MAPE for the nn
+t_mape <- percent(mape(test_v_expected.nn2_4i$`Neural Net Output`, test_v_expected.nn2_4i$`Expected Output`))
+t_mape
+
+performance_scores <- append(performance_scores, list(nn2_4i = list(t_sse, t_mse, t_rmse, t_mape)))
+
+```
+
+```{r line-graph-mlp-4i-6-9-6-f1}
+# Create Line Chart
+linetypes <- line_compare_nn_to_actual(test_v_expected.nn2_4i, test_v_expected.nn2_4i$`Expected Output`)
+
+# add a legend 
+legend(0, .75, names(test_v_expected.nn2_4i), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
+```
+
+### Performance After Input Experimentation
+```{r performance-mlp-structures}
+# Display a table for performance so far
+perf_dt_2 <- rbindlist(performance_scores)
+perf_dt_2 <- cbind(names(performance_scores), perf_dt_2)
+colnames(perf_dt_2) <- c("NN", "SSE", "MSE", "RMSE", "MAPE")
+perf_dt_2
+```
 ## Conclusion
 
 ...
