@@ -61,7 +61,10 @@ h2 {
 
 h3 {
     font-size: 1.75rem
+}
 
+h3 {
+    font-size: 1.5rem
 }
 
 p {
@@ -134,11 +137,13 @@ blockquote {
     display: inline-block;
 }
 
-.non-code pre {
+.non-code pre,
+.sourceCode.r pre {
     page-break-inside: auto;
     overflow-x: hidden;
 }
-.non-code code {
+.non-code code,
+.sourceCode.r code {
     white-space: pre-line;
 }
 
