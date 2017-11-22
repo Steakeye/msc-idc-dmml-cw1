@@ -1,4 +1,4 @@
----
+﻿---
 title: "Forecasting1"
 output: html_document
 ---
@@ -47,10 +47,10 @@ resources:
 
 ##Preparation of data
 
-The exchange data needs to be loaded, partitioned, and scaled.
+The exchange data needs to be loaded, partitioned (into training and testing datasets), and scaled [@RefWorks:doc:5a0f45afe4b0373bf38bf6a2].
 
 ```{r prep-data-f1}
-#going to import the Excel spreadsheet WhiteWine dataset
+#going to import the Excel spreadsheet Currency Exchange dataset
 exchange.raw <- read_excel("../data/Exchange.xlsx")
 ```
 
@@ -110,6 +110,10 @@ paste("test:")
 summary(exchange.normalised_test)
 ```
 
+### The time series input problem
+
+Because we're forecasting with time-series data, one of the main concerns when choosing the configuration of the neural network is how many input values are fed into the system in order to derive our output; too few inputs and we lack the data for forecasting but too many and the neural network. In the following process, the number of inputs will be on variable that is experimented with along side the number of hidden layers and back propagation techniques.
+
 ###Setting up the training data
 
 Because we're looking to train the neural network on time-series data, we have to transform the data to make it easy to pass in time based input, which means we need to provide more than 1 input value at a time to train against the desired output; to that end, below is a code chunk that takes the exchange rate values and creates rows where the last entry is the desired output, the third is considered day 0 and the 1st to entries are 2 previous days from day 0.
@@ -118,26 +122,27 @@ Before the data is ready, a function can be created in order to re-use the funct
 
 
 ```{r matrix-func-f1}
-vector_to_time_series_data <- function(vec, colCount) {
+vector_to_time_series_data <- function(vec, colCount, step = 1) {
   row_count <- length(vec)
   
   staggered_data_matrix <- matrix(vec, row_count, colCount)
   
   for (i in 1:row_count){
     new_row <- c(staggered_data_matrix[i])
-    
+
     for (j in 1:(colCount-1)){
-      new_row <- c(new_row, staggered_data_matrix[i + j])
+      new_row <- c(new_row, staggered_data_matrix[i + (step * j)])
     }
     
     staggered_data_matrix[i,] <- new_row
   }
 
-  return (as.data.frame(head(staggered_data_matrix, row_count - (colCount -1))))
+  return (as.data.frame(head(staggered_data_matrix, row_count - ((colCount -1) * step))))
 }
 ```
 
-With this function we can transform the training currency values now: 
+With this function we can transform the training currency values now:
+
 ```{r matrix-exchange-f1}
 staggered_data_frame <- vector_to_time_series_data(exchange.scaled_train$`USD/EUR`, 4)
 
@@ -167,7 +172,7 @@ plot(mlp.nn1)
 
 ###Testing the network
 
-Before we can test the neural network against test data we need to transform the test data we took from the original dataset and transform it so we can pass in three input variables similarly to how the network was trained. Picking the number of inputs and what those inputs might be is part of the challenge of creating a neural network for time-series data; it's pretty obvious that one input value will hardly help project a future value but what value to pick isn't clear. The lower the number or inputs the greater likelihood of error but the higher the number of inputs, the increased complexity and longer training period.  I've picked 3 consecutive days to start with but will experiment with other configurations afterwards.
+Before we can test the neural network against test data we need to transform the test data we took from the original dataset and transform it so we can pass in three input variables similarly to how the network was trained. Picking the number of inputs and what those inputs might be is part of the challenge of creating a neural network for time-series data; it's pretty obvious that one input value will hardly help project a future value but what value to pick isn't clear. The lower the number or inputs the greater likelihood of error but the higher the number of inputs, the increased complexity and longer training period. I've picked 3 consecutive days to start with but will experiment with other configurations afterwards.
 
 ```{r prep-test-mlp-f1}
 staggered_test_data_frame <- vector_to_time_series_data(exchange.scaled_test$`USD/EUR`, 3)
@@ -199,7 +204,7 @@ There are two ways we can look at the quality of the performance of the neural n
 
 #### Numeric indicators
 
-And then the Sum of Square Errors, and Mean Squared Error values can be derived in order to look at the performance of the trained neural network against test data. The closer to 0 the values are, the better.
+And then the Sum of Square Errors, and Mean Squared Error values can be derived in order to look at the performance of the trained neural network against test data. The closer to 0 the values are, the better [@RefWorks:doc:5a1058c5e4b0eb1ce060a9f3].
 
 ```{r indicator-funcs1-mlp-f1}
 output_delta_func <- function (expected, actual) {
@@ -241,11 +246,11 @@ performance_scores$nn1 <- append(performance_scores$nn1, c(t_rmse, t_mape))
 
 #### Visual evaluation
 
-That follows is a graph plotting neural net predicted values against actual values.
+That follows is a graph plotting neural net predicted values against actual (normalised/scaled) values.
 
 
 ```{r line-graph-func-mlp-f1}
-line_compare_nn_to_actual <- function (compare_data, token_x) {
+line_compare_nn_to_actual <- function (compare_data, token_x, suffix = "") {
   count.col <- ncol(compare_data)
 
   # get the range for the x and y axis 
@@ -264,19 +269,20 @@ line_compare_nn_to_actual <- function (compare_data, token_x) {
   
   # add lines 
   for (i in 1:count.col) { 
-    lines(test_v_expected.nn1[i], type="b", lwd=1.5,
+    lines(compare_data[i], type="b", lwd=1.5,
       lty=linetype[i], col=colors[i], pch=plotchar[i]) 
   } 
   
   # add a title and subtitle 
-  title("Exchange Rate Prediction Versus Actual", "Comparing actual values for USD/EUR rates against values derived from a Neural Network")
+  title(paste(c("Exchange Rate Prediction Versus Actual", suffix)),
+        "Comparing actual values for USD/EUR rates against values derived from a Neural Network")
   
   return(list(linetype, plotchar, colors))
 }
 ```
 ```{r line-graph-mlp-f1}
 # Create Line Chart
-linetypes <- line_compare_nn_to_actual(test_v_expected.nn1, test_v_expected.nn1$`Expected Output`)
+linetypes <- line_compare_nn_to_actual(test_v_expected.nn1, test_v_expected.nn1$`Expected Output`, suffix = "(NN1)")
 
 # add a legend 
 legend(45, -.25, names(test_v_expected.nn1), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
@@ -346,19 +352,12 @@ t_mape
 performance_scores <- append(performance_scores, list(nn1_norm = list(t_sse, t_mse, t_rmse, t_mape)))
 
 ```
-```{r line-graph-mlp-norm-f1}
-# Create Line Chart
-linetypes <- line_compare_nn_to_actual(test_v_expected.nn1_norm, test_v_expected.nn1_norm$`Expected Output`)
 
-# add a legend 
-legend(0, .75, names(test_v_expected.nn1_norm), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
-```
-
-I'm not really sure what's going on with the line graph being plot for this but the figures show that the use of normalised data over scaled data is a marked improvement; the number of steps to train the netowrk is faster, the accuracy is higher against test data; as such, I will make sure all other nueral networks for this experiment will use the normalised data.
+I'm not really sure what's going on with the line graph being plot for this but the figures show that the use of normalised data over scaled data is a marked improvement; the number of steps to train the network is faster, the accuracy is higher against test data; as such, I will make sure all other neural networks for this experiment will use the normalised data.
 
 ### Alternative hidden layer structures
 
-The hidden layers are the 'secret sauce' of this kind of neural network, the layers describe neurons consisting of nodes and vertices that connect to other neuron nodes; the vertices between nodes adjust the values as they are passed from node to node resulting in the answer at the end of the chain off layers. The first neural network had 3 hidden layers each powers of 2, starting with 8 and halving at each next layer.
+The hidden layers are the 'secret sauce' of this kind of neural network, the layers describe neurons consisting of nodes and vertices that connect to other neuron nodes; the vertices between nodes adjust the values as they are passed from node to node resulting in the answer at the end of the chain off layers. The art is to pick a good combination of hidden layers that doesn't over-fit to the training data and isn't so complicated it take a long time to train but also produces good accuracy results against test and validation data [@RefWorks:doc:5a14aa82e4b08b76da9720f5]. The first neural network had 3 hidden layers each powers of 2, starting with 8 and halving at each next layer.
 
 The next step is to experiment with the same dataset and the same input values but experiment with the accuracy of some different hinder layer structures like:
 
@@ -404,14 +403,6 @@ performance_scores <- append(performance_scores, list(nn2 = list(t_sse, t_mse, t
 
 ```
 
-```{r line-graph-mlp-6-9-6-f1}
-# Create Line Chart
-linetypes <- line_compare_nn_to_actual(test_v_expected.nn2, test_v_expected.nn2$`Expected Output`)
-
-# add a legend 
-legend(0, .75, names(test_v_expected.nn2), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
-```
-
 ### {6, 9, 6, 3} hidden layer structure
 
 ```{r train-mlp-6-9-6-3-f1}
@@ -449,15 +440,6 @@ performance_scores <- append(performance_scores, list(nn3 = list(t_sse, t_mse, t
 
 ```
 
-```{r line-graph-mlp-6-9-6-3-f1}
-# Create Line Chart
-linetypes <- line_compare_nn_to_actual(test_v_expected.nn3, test_v_expected.nn3$`Expected Output`)
-
-# add a legend 
-legend(0, .75, names(test_v_expected.nn3), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
-```
-
-
 ### {12, 8, 4} hidden layer structure
 
 ```{r train-mlp-12-8-4-f1}
@@ -493,14 +475,6 @@ t_mape
 
 performance_scores <- append(performance_scores, list(nn4 = list(t_sse, t_mse, t_rmse, t_mape)))
 
-```
-
-```{r line-graph-mlp-12-8-4-f1}
-# Create Line Chart
-linetypes <- line_compare_nn_to_actual(test_v_expected.nn4, test_v_expected.nn4$`Expected Output`)
-
-# add a legend 
-legend(0, .75, names(test_v_expected.nn4), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
 ```
 
 ### {16, 9, 4} hidden layer structure
@@ -540,14 +514,6 @@ t_mape
 performance_scores <- append(performance_scores, list(nn5 = list(t_sse, t_mse, t_rmse, t_mape)))
 ```
 
-```{r line-graph-mlp-16-9-4-f1}
-# Create Line Chart
-linetypes <- line_compare_nn_to_actual(test_v_expected.nn5, test_v_expected.nn5$`Expected Output`)
-
-# add a legend 
-legend(0, .75, names(test_v_expected.nn5), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
-```
-
 ### Performance Thus Far
 ```{r performance-mlp-structures}
 # Display a table for performance so far
@@ -557,11 +523,11 @@ colnames(perf_dt_1) <- c("NN", "SSE", "MSE", "RMSE", "MAPE")
 perf_dt_1
 ```
 
-Looking at the performnce metrics so far, it would make sense to invest more time experimenting with neural networks with the following hidden layers: {6, 9, 6} (nn2), {12, 8, 4} (nn4); for these two structures, all the metrics outperorm the other neural networks in terms of being closest to 0. What needs to be seen now is whether of not the accuracy of the netowrks can be improved by increasing or decreasing the number of inputs. It would make sense that accuracy should increase with greater number of inputs but for the same ok completeness, 2 inputs will be tried as well as 4.
+Looking at the performance metrics so far, it would make sense to invest more time experimenting with neural networks with the following hidden layers: {6, 9, 6} (nn2), {12, 8, 4} (nn4); for these two structures, all the metrics outperform the other neural networks in terms of being closest to 0. What needs to be seen now is whether of not the accuracy of the networks can be improved by increasing or decreasing the number of inputs. It would make sense that accuracy should increase with greater number of inputs but for the sake of completeness, 2 inputs will be tried as well as 4.
 
 ##Alternative Input Counts
 
-In order to eperiment with the imputs we need to first prepare the data.
+In order to experiment with the inputs we need to first prepare the data.
 
 ### Preparing the data for 2 inputs
 ```{r matrix-exchange-normalised-2i-f1}
@@ -636,15 +602,6 @@ performance_scores <- append(performance_scores, list(nn2_2i = list(t_sse, t_mse
 
 ```
 
-```{r line-graph-mlp-2i-6-9-6-f1}
-# Create Line Chart
-linetypes <- line_compare_nn_to_actual(test_v_expected.nn2_2i, test_v_expected.nn2_2i$`Expected Output`)
-
-# add a legend 
-legend(0, .75, names(test_v_expected.nn2_2i), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
-```
-
-
 ### {6, 9, 6} hidden layer structure with 4 inputs
 
 ```{r train-mlp-4i-6-9-6-f1}
@@ -682,14 +639,6 @@ performance_scores <- append(performance_scores, list(nn2_4i = list(t_sse, t_mse
 
 ```
 
-```{r line-graph-mlp-4i-6-9-6-f1}
-# Create Line Chart
-linetypes <- line_compare_nn_to_actual(test_v_expected.nn2_4i, test_v_expected.nn2_4i$`Expected Output`)
-
-# add a legend 
-legend(0, .75, names(test_v_expected.nn2_4i), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
-```
-
 ### Performance After Input Experimentation
 ```{r performance-mlp-structures-update}
 # Display a table for performance so far
@@ -698,9 +647,157 @@ perf_dt_2 <- cbind(names(performance_scores), perf_dt_2)
 colnames(perf_dt_2) <- c("NN", "SSE", "MSE", "RMSE", "MAPE")
 perf_dt_2
 ```
+
+### A closer look at the better performers
+
+The following is a graph looking at the {12, 8, 4} hidden layer neural network, also labelled 'nn4'; this was the second best outcome of the neural networks that used 3 inputs.
+
+```{r line-graph-mlp-12-8-4-f1}
+# Create Line Chart
+linetypes <- line_compare_nn_to_actual(test_v_expected.nn4, test_v_expected.nn4$`Expected Output`, suffix = "(NN4)")
+
+# add a legend 
+legend(45, -.25, names(test_v_expected.nn4), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
+```
+
+The following is a graph looking at the {6, 9, 6} hidden layer neural network where the number of inputs was reduced to 2, also labelled 'nn2_2i'; this was the second best outcome of the neural networks that used 3 inputs.
+
+```{r line-graph-mlp-2i-6-9-6-f1}
+# Create Line Chart
+linetypes <- line_compare_nn_to_actual(test_v_expected.nn2_2i, test_v_expected.nn2_2i$`Expected Output`, suffix = "(NN2 - 2 inputs)")
+
+# add a legend 
+legend(0, .75, names(test_v_expected.nn2_2i), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
+```
+
+The graphs tell a truth that the indicator values do not; there seems to be some serious over-fitting going on. The neural network results look like that they're mostly predicting based on the value of the previous day which is not really going to be much use in terms of real forecasting. There are are a few more courses of action we cane take to see if we can get better results:
+
+- Look into tweaking other variables for the Neural Network behaviour
+  - Specifically the learning algorithm and learning rate, like using ’rprop-’ instead of ’rprop+’
+- Look into feeding in different data
+  - Like increasing the interval of days between input values 
+- Using a different Neural Network library to see if it's more suitable for time-series data
+
+## More experimentation
+
+### Adjusting threshold and algorithm
+
+The next experiment is to drastically increase the threshold tolerance and choose a variation of the back propagation algorithm, 'rprop-'.
+
+```{r train-mlp-12-8-4-t0p5-f1}
+#mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
+
+mlp.nn_12_8_4_t0p5 <- neuralnet(mlp.form1, normalised_staggered_data_frame, hidden = c(12, 8, 4), threshold=0.5, algorithm = "rprop-")
+```
+
+```{r comparison-table-mlp-mlp.nn-12-8-4-t0p5-f1}
+mlp.nn4_t0p1_results <- compute(mlp.nn_12_8_4_t0p5, normalised_staggered_test_data_frame)
+
+test_expected_data.nn4_t0p1 <- tail(exchange.normalised_test$`USD/EUR`, -3)
+
+test_v_expected.nn4_t0p5 <- expected_v_test_func(test_expected_data.nn4_t0p1, mlp.nn4_t0p1_results)
+```
+
+```{r run-indicator-funcs-mlp-12-8-4-t0p5-f1}
+test_delta.nn4_t0p5 <- output_delta_func(test_v_expected.nn4_t0p5$`Expected Output`, test_v_expected.nn4_t0p5$`Neural Net Output`)
+#SSE of this first nn
+t_sse <- sse_func(test_delta.nn4_t0p5)
+t_sse
+#MSE of this first nn
+t_mse <- mse_func(test_delta.nn4_t0p5)
+t_mse
+#RMSE for the nn
+t_rmse <- rmse(test_v_expected.nn4_t0p5$`Neural Net Output`, test_v_expected.nn4_t0p5$`Expected Output`)
+t_rmse
+#MAPE for the nn
+t_mape <- percent(mape(test_v_expected.nn4_t0p5$`Neural Net Output`, test_v_expected.nn4_t0p5$`Expected Output`))
+t_mape
+
+#performance_scores <- append(performance_scores, list(nn4 = list(t_sse, t_mse, t_rmse, t_mape)))
+
+```
+
+```{r line-graph-mlp-12-8-4-t0p1-f1}
+# Create Line Chart
+linetypes <- line_compare_nn_to_actual(test_v_expected.nn4_t0p5, test_v_expected.nn4_t0p5$`Expected Output`, suffix = "(NN4 - 0.5 threshold)")
+
+# add a legend 
+legend(0, .75, names(test_v_expected.nn4_t0p5), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
+```
+
+Lessening the threshold for training actually allows the neural network to not fixate so much on the value but instead the trends to this graph demonstrates better performance but it's still not achieving the sort of results we'd hope for.
+
+### Adjusting input training data
+
+The next experiment is to see if giving the Neural Network broader data it might better predict the expected value; in this case training with days that are a day apart.
+
+Here follows the training data:
+```{r matrix-exchange-2day-f1}
+normalised_staggered_2day_data_frame <- vector_to_time_series_data(exchange.normalised_train$`USD/EUR`, 4, step=2)
+
+colnames(normalised_staggered_2day_data_frame) <- c("Input_dneg6", "Input_dneg4", "Input_dneg2", "Output")
+
+#Summary of training data
+head(normalised_staggered_2day_data_frame)
+```
+
+Here follows the test data:
+```{r prep-test-mlp-norm-2day-f1}
+normalised_staggered_test_2day_data_frame <- vector_to_time_series_data(exchange.normalised_test$`USD/EUR`, 3, step = 2)
+
+colnames(normalised_staggered_test_2day_data_frame) <- c("Input_dneg6", "Input_dneg4", "Input_dneg2")
+
+#Summary of training data
+head(normalised_staggered_test_2day_data_frame)
+```
+
+```{r train-mlp-12-8-4-3id2-f1}
+mlp.form_2d <- as.formula("Output ~ Input_dneg2 + Input_dneg4 + Input_dneg6")
+
+mlp.nn_12_8_4_3id2 <- neuralnet(mlp.form_2d, normalised_staggered_2day_data_frame, hidden = c(12, 8, 4), threshold=0.5, algorithm = "rprop-")
+```
+
+```{r comparison-table-mlp-mlp.nn-12-8-4-3id2-f1}
+mlp.nn4_3id2_results <- compute(mlp.nn_12_8_4_3id2, normalised_staggered_test_2day_data_frame)
+
+test_expected_data.nn4_3id2 <- tail(exchange.normalised_test$`USD/EUR`, -5)
+
+test_v_expected.nn4_3id2 <- expected_v_test_func(test_expected_data.nn4_3id2, mlp.nn4_3id2_results)
+```
+
+```{r run-indicator-funcs-mlp-12-8-4-3id2-f1}
+test_delta.nn4_3id2 <- output_delta_func(test_v_expected.nn4_3id2$`Expected Output`, test_v_expected.nn4_3id2$`Neural Net Output`)
+#SSE of this first nn
+t_sse <- sse_func(test_delta.nn4_3id2)
+t_sse
+#MSE of this first nn
+t_mse <- mse_func(test_delta.nn4_3id2)
+t_mse
+#RMSE for the nn
+t_rmse <- rmse(test_v_expected.nn4_3id2$`Neural Net Output`, test_v_expected.nn4_3id2$`Expected Output`)
+t_rmse
+#MAPE for the nn
+t_mape <- percent(mape(test_v_expected.nn4_3id2$`Neural Net Output`, test_v_expected.nn4_3id2$`Expected Output`))
+t_mape
+
+#performance_scores <- append(performance_scores, list(nn4 = list(t_sse, t_mse, t_rmse, t_mape)))
+
+```
+
+```{r line-graph-mlp-12-8-4-t0p1-2day-f1}
+# Create Line Chart
+linetypes <- line_compare_nn_to_actual(test_v_expected.nn4_3id2, test_v_expected.nn4_3id2$`Expected Output`, suffix = "(NN4 - 2 day gapped data)")
+
+# add a legend 
+legend(0, .75, names(test_v_expected.nn4_3id2), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
+```
+
+Adjusting the input data to be over a spread of 6 days rather than 3 has not create the results I had been hoping for; my idea was that the neural network my find a more general trend of a longer time period but instead it seems to just lag behind even further; it's as though whatever is the most recent input value passed into the neural network is what then is the main determinant of the predicted value, without any kind of trajectory of extrapolation.
+
 ## Conclusion
 
-...
+I think that further research into other Neural Network libraries would be the first course of action I would take next, for example Caret and Nnet. The Neural network with the performance that pleased me the most was labelled `nn4_t0p5`, having a {12, 8, 4} hidden layer structure and a 0.5 accuracy threshold; this happens to have delivered best results (MAPE: 7.72%) when you take into account it wasn't so tightly over-fit to the data; I'd like to see how it would perform with more test data but I think another type of neural network might perform better.
 
+One thing I didn't do, was to use any smoothing methods on the data to take into account noise and seasonality; if I had time, I would research how to do this and apply it to the training data to see if that provided any benefit, as I have a feeling it may well have! Another tool I would look into would be the auto-regressive moving average, which looks like another way of looking at recent trends as the time series moves along; perhaps even adding extra inputs that are my own derived values based on input data might help nudge the performance in the right direction; I won't know without trying.
 
 </section>

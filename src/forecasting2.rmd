@@ -1,0 +1,32 @@
+---
+title: "Forecasting2"
+output: html_document
+---
+
+
+```{r setup-f2, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r deps-f2, echo=FALSE, include=FALSE, message=FALSE}
+```
+
+<section>
+
+#Question 4: Forecasting (SVR)
+
+##Premise
+
+>You need to construct a SVM model to address this forecasting problem. You need to consider the appropriate input vector. Write a code in R Studio to implement this SVR scheme. You need to show the performance of your model both graphically as well as in terms of usual statistical indices (MSE, RMSE and MAPE). Hind: The input selection problem is very important. Experiment with various options. Show all your working steps. As everyone will have different forecasting result, emphasis in the marking scheme will be given to the adopted methodology and the explanation/justification of various decisions you have taken in order to provide an acceptable, in terms of performance, solution.
+
+<!--
+4th Objective (SVR)
+• Discuss the input selection problem and propose various input configurations 2
+• Design an SVR and use various structures/parameters (linear/nonlinear kernels) 10
+• Provide your best results both graphically (your prediction output vs. desired output) and via performance indices 3
+-->
+
+Unfortunately this segment could not be completed.
+
+</section>
