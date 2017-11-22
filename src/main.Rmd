@@ -45,6 +45,9 @@ nocite: |
 ```{r forecasting1, child = 'forecasting1.rmd'}
 ```
 
+```{r forecasting1, child = 'forecasting2.rmd'}
+```
+
 <section>
 
 # References
