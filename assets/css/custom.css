@@ -13,6 +13,12 @@
         page-break-after: always;
     }
 
+    .page-break-prevent-after,
+    .sourceCode,
+    .kw {
+        page-break-after: avoid;
+    }
+
     .whole-page-height {
         height: 30cm;
     }
@@ -37,6 +43,7 @@
         height: 15cm;
     }
 
+    img,
     .third-page-height {
         height: 10cm;
     }
@@ -137,13 +144,15 @@ blockquote {
     display: inline-block;
 }
 
+pre,
 .non-code pre,
-.sourceCode.r pre {
+pre.sourceCode.r {
     page-break-inside: auto;
     overflow-x: hidden;
 }
+code,
 .non-code code,
-.sourceCode.r code {
+code.sourceCode.r {
     white-space: pre-line;
 }
 
