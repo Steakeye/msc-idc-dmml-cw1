@@ -801,3 +801,50 @@ I think that further research into other Neural Network libraries would be the f
 One thing I didn't do, was to use any smoothing methods on the data to take into account noise and seasonality; if I had time, I would research how to do this and apply it to the training data to see if that provided any benefit, as I have a feeling it may well have! Another tool I would look into would be the auto-regressive moving average, which looks like another way of looking at recent trends as the time series moves along; perhaps even adding extra inputs that are my own derived values based on input data might help nudge the performance in the right direction; I won't know without trying.
 
 </section>
+
+
+### {x, x} hidden layer structure
+
+```{r}
+#mlp.form1 <- as.formula("Output ~ Input_d0 + Input_dneg1 + Input_dneg2")
+
+mlp.nn_x_x <- neuralnet(mlp.form1, normalised_staggered_data_frame, hidden = c(4,2), threshold=0.25, stepmax = 1200000)
+```
+
+```{r}
+plot(mlp.nn_x_x)
+```
+
+```{r}
+mlp.nnX_results <- compute(mlp.nn_x_x, normalised_staggered_test_data_frame)
+
+test_expected_data.nnX <- tail(exchange.normalised_test$`USD/EUR`, -3)
+
+test_v_expected.nnX <- expected_v_test_func(test_expected_data.nnX, mlp.nnX_results)
+```
+```{r}
+test_delta.nnX <- output_delta_func(test_v_expected.nnX$`Expected Output`, test_v_expected.nnX$`Neural Net Output`)
+#SSE of this first nn
+t_sse <- sse_func(test_delta.nnX)
+t_sse
+#MSE of this first nn
+t_mse <- mse_func(test_delta.nnX)
+t_mse
+#RMSE for the nn
+t_rmse <- rmse(test_v_expected.nnX$`Neural Net Output`, test_v_expected.nnX$`Expected Output`)
+t_rmse
+#MAPE for the nn
+t_mape <- percent(mape(test_v_expected.nnX$`Neural Net Output`, test_v_expected.nnX$`Expected Output`))
+t_mape
+
+#performance_scores <- append(performance_scores, list(nn5 = list(t_sse, t_mse, t_rmse, t_mape)))
+```
+
+
+```{r}
+# Create Line Chart
+linetypes <- line_compare_nn_to_actual(test_v_expected.nnX, test_v_expected.nnX$`Expected Output`, suffix = "(NNX)")
+
+# add a legend 
+legend(0, .75, names(test_v_expected.nnX), cex=0.8, col=linetypes[[3]], pch=linetypes[[2]], lty=linetypes[[1]], title="Exchange Rates")
+```
